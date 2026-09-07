@@ -1,0 +1,39 @@
+NEON RIFT - BUILD VALIDATION
+============================
+
+Automated testing was performed in headless Chromium, with real
+keyboard events and Chromium's emulated touchscreen input.
+
+60 functional checks covered:
+- Boot, ship selection, movement, auto-fire, and projectile hits.
+- Keyboard and touch dashes, Overdrive, pause, and resume.
+- Upgrade cards, number-key selection, rerolls, and rank application.
+- Nine-sector progression, victory, endless continuation, and death.
+- Restart/reset behavior and automatic pause when focus is lost.
+- Save serialization and restoration, malformed save data, and
+  operation with browser storage unavailable.
+- Shield absorption/recharge, hull upgrades, and dash protection.
+- Repeatable upgrades after the ordinary upgrade pool is exhausted.
+- Layouts at 1440x900, 1280x800, 1024x600, 844x390, 390x844,
+  and 320x568.
+
+Six complete or until-death combat simulations covered all three
+ships. Assisted runs reached the ending with each ship. An unassisted
+basic automated pilot also completed a Striker run. Separate long-run
+simulation started at sector 50 with a fully upgraded build and
+validated bounded entity counts and finite resource values across
+more than six additional minutes of simulated combat.
+
+No JavaScript runtime errors were observed in these checks.
+The JavaScript also passed Node's syntax check.
+
+Test environment note: the sandbox browser blocks URL navigation,
+so the self-contained page was loaded directly into Chromium's
+in-memory document. Save serialization/restoration used a controlled
+Storage-compatible test fixture; storage-unavailable behavior used
+the browser's restricted storage environment. Touch testing was
+emulated, not performed on physical phone hardware.
+
+This is not a claim of universal bug-free operation. Other browser
+engines, device hardware, and browser-management policies were not
+individually certified.
