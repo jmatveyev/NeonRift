@@ -1,6 +1,6 @@
 NEON RIFT
 A complete, self-contained arcade survival game
-Version 1.0
+Version 1.1.0 - Mobile Controls
 
 GET STARTED
 ===========
@@ -29,11 +29,29 @@ R                       Start a new run from the results screen
 Aiming and firing are automatic. Your job is movement, positioning,
 dash timing, and choosing a powerful build.
 
-On a touchscreen, drag anywhere in the arena to steer. Use the DASH
-and OVERDRIVE buttons for abilities. A mouse drag also works as a
-virtual joystick. Some phone file-preview apps do not execute HTML;
-use a browser that can open the file, or open the game from a static
-web host. The game itself has no server-side component.
+PHONE CONTROLS
+==============
+Open the deployed GitHub Pages site in a phone browser. The visible thumbstick
+moves your ship. DASH and OVERDRIVE are large buttons on the other side.
+Keep one finger steering while using an ability with another finger. Aiming
+and firing stay automatic. Dragging directly on the arena also still works.
+
+PAUSE is a touch button in the top-right corner. Ship selection, upgrades,
+rerolls, retry, and all pause-menu actions can be tapped or scrolled into view.
+Portrait and landscape are supported. Rotating the phone pauses safely; tap
+BACK TO THE RIFT after the layout settles. Fullscreen is optional, not required.
+
+The pause menu offers AUTO / ON / OFF touch-control selection and a left-handed
+layout that swaps the thumbstick and abilities. Those preferences are saved
+locally when browser storage is available. Touch input is cleared when you
+pause, leave the page, lose pointer capture, or cancel a touch.
+
+Phone rendering uses a capped pixel ratio to reduce graphics load. The control
+layout accounts for screen cutouts and bottom gesture areas. Actual iPhone and
+Android hardware has not been tested; see MOBILE-TESTING.md for exact coverage.
+A file-preview app may not execute HTML. Use the deployed website or open the
+standalone file in a browser. Both index.html and neon-rift.html contain the
+complete game and remain byte-identical, with no runtime network dependencies.
 
 THE MISSION
 ===========
@@ -110,6 +128,13 @@ SOURCE CODE
 ===========
 The complete readable HTML, CSS, and JavaScript source is contained
 in neon-rift.html. Open it in a text editor to inspect or modify it.
-There are no third-party runtime dependencies or build steps.
+There are no third-party runtime dependencies or required player build steps.
+The mobile update can be reproduced with Python 3:
+    python3 tools/mobile/build.py
+The builder applies the reviewed mobile changes to a frozen copy of the original
+source, verifies the tested output hash, and updates both launch files. It refuses
+to overwrite unrecognized edits. When changing the game, update the source/build
+recipe deliberately and retest rather than silently replacing manual edits.
+Automated mobile regression tests are in tests/mobile_controls.py.
 
 Good luck, pilot.

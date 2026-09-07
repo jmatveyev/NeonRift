@@ -1,0 +1,40 @@
+name: Prepare tested mobile build
+on:
+  push:
+    branches: [mobile-controls-20260907]
+    paths:
+      - 'tools/mobile/**'
+      - '.github/workflows/prepare-mobile.yml'
+permissions:
+  contents: write
+concurrency:
+  group: prepare-mobile-controls
+  cancel-in-progress: false
+jobs:
+  assemble:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out the working branch
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          ref: mobile-controls-20260907
+      - name: Assemble and verify the tested release
+        run: |
+          python3 tools/mobile/build.py
+          node - <<'JS'
+          const fs = require('fs');
+          const html = fs.readFileSync('index.html', 'utf8');
+          const scripts = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)];
+          for (const script of scripts) new Function(script[1]);
+          if (html !== fs.readFileSync('neon-rift.html', 'utf8')) throw new Error('Launch files differ');
+          console.log('JavaScript syntax and paired launch files verified.');
+          JS
+      - name: Commit only the assembled launch files
+        run: |
+          if git diff --quiet -- index.html neon-rift.html; then exit 0; fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- index.html neon-rift.html
+          git commit -m 'Assemble tested mobile controls release 1.1.0'
+          git push origin HEAD:mobile-controls-20260907

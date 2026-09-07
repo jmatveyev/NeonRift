@@ -1,0 +1,51 @@
+/* Phone controls: independent pointers, safe-area spacing, and reachable menus. */
+:root{--phone-edge:16px;--stick-size:120px;--view-height:100dvh}
+.screen,#hud{bottom:auto;height:var(--view-height,100vh)}
+.screen{overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+#movePad{position:absolute;left:calc(var(--phone-edge) + env(safe-area-inset-left,0px));bottom:calc(22px + env(safe-area-inset-bottom,0px));width:var(--stick-size);height:var(--stick-size);border-radius:50%;border:1px solid #78f8df55;background:radial-gradient(circle,#78f8df09 25%,#0c1827cc 70%);pointer-events:auto;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;box-shadow:0 4px 30px #0004}
+#movePad:before,#movePad:after{content:"";position:absolute;pointer-events:none;background:#78f8df19}
+#movePad:before{left:50%;top:12px;bottom:12px;width:1px}#movePad:after{top:50%;left:12px;right:12px;height:1px}
+#moveKnob{position:absolute;left:calc(50% - 23px);top:calc(50% - 23px);width:46px;height:46px;border:1px solid #aaffee8a;background:#78f8df24;border-radius:50%;pointer-events:none;box-shadow:inset 0 0 16px #78f8df11}
+#movePad.active{border-color:#b0ffedb3;background:radial-gradient(circle,#78f8df18,#0c1827dc)}
+#moveCaption{position:absolute;bottom:10px;width:100%;text-align:center;font-size:8px;font-weight:750;letter-spacing:.18em;color:#a7d5cc;pointer-events:none}
+#movePad.active #moveCaption{opacity:0}
+.phone-setting{display:none}.mobile-controls .phone-setting{display:flex}
+.mobile-controls .touch-note{display:block}.mobile-controls .desktop-note,.mobile-controls .controls-mini,.mobile-controls .pause-keys{display:none}
+.mobile-controls .screen{padding:calc(76px + env(safe-area-inset-top,0px)) calc(16px + env(safe-area-inset-right,0px)) calc(22px + env(safe-area-inset-bottom,0px)) calc(16px + env(safe-area-inset-left,0px));align-items:flex-start}
+.mobile-controls .screen>.home-layout,.mobile-controls .screen>.panel{margin:auto}
+.mobile-controls .topbar{left:calc(var(--phone-edge) + env(safe-area-inset-left,0px));right:calc(var(--phone-edge) + env(safe-area-inset-right,0px));top:calc(10px + env(safe-area-inset-top,0px))}
+.mobile-controls .tools{gap:6px}.mobile-controls .tool{min-width:44px;min-height:44px;height:44px;padding:0 10px;font-size:11px}
+.mobile-controls #pauseBtn{min-width:58px;font-size:10px;letter-spacing:.05em}
+.mobile-controls #musicBtn,.mobile-controls #fullBtn{display:none}
+.mobile-controls .brand{font-size:11px;letter-spacing:.13em}.mobile-controls.in-game .brand{font-size:0;gap:0}
+.mobile-controls .hud-top{left:calc(var(--phone-edge) + env(safe-area-inset-left,0px));right:calc(var(--phone-edge) + env(safe-area-inset-right,0px));top:calc(75px + env(safe-area-inset-top,0px))}
+.mobile-controls .status{width:min(158px,43vw)}.mobile-controls .status-top{font-size:10px}.mobile-controls .status-top span:first-child{font-size:0}.mobile-controls .status-top span:first-child:after{content:"HULL";font-size:9px}
+.mobile-controls .score-value{font-size:23px}.mobile-controls .status-bottom{font-size:8px}.mobile-controls .score-label{font-size:8px}
+.mobile-controls .sector{top:calc(17px + env(safe-area-inset-top,0px));left:41%;max-width:135px}.mobile-controls .sector .tag{font-size:8px}.mobile-controls .sector-name{font-size:7px}.mobile-controls .sector-progress{width:88px;margin-top:6px}
+.mobile-controls #bossHud{top:calc(143px + env(safe-area-inset-top,0px));width:min(340px,72vw)}
+.mobile-controls .hud-bottom{left:auto;right:calc(var(--phone-edge) + env(safe-area-inset-right,0px));bottom:calc(22px + env(safe-area-inset-bottom,0px));transform:none;gap:9px;align-items:flex-end}
+.mobile-controls .ability{min-width:0;width:76px;height:76px;min-height:76px;padding:8px 4px;gap:4px;border-radius:22px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;-webkit-touch-callout:none;user-select:none;touch-action:none}
+.mobile-controls .ability-icon{display:block;font-size:23px;line-height:23px}.mobile-controls .ability kbd{display:none}.mobile-controls .ability strong{font-size:9px;letter-spacing:.055em}.mobile-controls .ability small{font-size:8px;margin-top:4px;white-space:normal;max-width:70px}
+.mobile-controls .ability.pressed{transform:scale(.95);border-color:var(--accent,var(--cyan));background:#214238}
+.mobile-controls .ability[aria-disabled=true]{opacity:.63}.mobile-controls .ability[aria-disabled=false]{opacity:1}
+.mobile-controls.left-handed #movePad{left:auto;right:calc(var(--phone-edge) + env(safe-area-inset-right,0px))}
+.mobile-controls.left-handed .hud-bottom{right:auto;left:calc(var(--phone-edge) + env(safe-area-inset-left,0px))}
+.mobile-controls .touch-hint{display:block;left:calc(var(--phone-edge) + env(safe-area-inset-left,0px));bottom:calc(var(--stick-size) + 36px + env(safe-area-inset-bottom,0px));max-width:145px;font-size:9px;line-height:1.7;letter-spacing:.03em}
+.mobile-controls.left-handed .touch-hint{left:auto;right:calc(var(--phone-edge) + env(safe-area-inset-right,0px));text-align:right}
+.mobile-controls .setting{gap:15px;min-height:56px}.mobile-controls .setting button{min-width:64px;min-height:44px;padding:10px 12px}
+.mobile-controls .secondary,.mobile-controls .reroll{min-height:44px}.mobile-controls .home-help button{min-height:44px;padding:10px 3px;display:inline-block}.mobile-controls .home-help{margin-top:6px}.mobile-controls .home-help .touch-note{display:inline}
+.mobile-controls .footer-note{display:none}.mobile-controls #toast{top:calc(191px + env(safe-area-inset-top,0px));max-width:85vw}
+.mobile-controls .panel{padding:22px}.mobile-controls .panel h2{font-size:29px}.mobile-controls .panel p{font-size:12px}.mobile-controls .panel .primary{min-height:48px}
+.mobile-controls .upgrade-card{touch-action:pan-y}.mobile-controls .upgrade-card:hover{transform:none}
+.mobile-controls .upgrade-bottom{flex-wrap:wrap}.mobile-controls #soundBtn{white-space:nowrap}
+@media(max-width:360px){.mobile-controls{--phone-edge:12px;--stick-size:108px}.mobile-controls .ability{width:70px;height:74px;min-height:74px}.mobile-controls .hud-bottom{gap:7px}.mobile-controls .sector{left:37%}.mobile-controls .brand{font-size:10px}.mobile-controls .home-copy{font-size:11px}.mobile-controls h1{font-size:56px}.mobile-controls h1 span{margin-left:6px}.mobile-controls .start-row{gap:10px}.mobile-controls .start-row .primary{font-size:12px;padding:14px 15px}.mobile-controls .start-note{font-size:9px}.mobile-controls .panel{padding:18px}}
+@media(orientation:landscape) and (max-height:540px){
+ .mobile-controls{--stick-size:110px}.mobile-controls .screen{padding-top:calc(65px + env(safe-area-inset-top,0px));padding-bottom:calc(16px + env(safe-area-inset-bottom,0px))}
+ .mobile-controls .topbar{top:calc(6px + env(safe-area-inset-top,0px))}.mobile-controls .hud-top{top:calc(58px + env(safe-area-inset-top,0px))}.mobile-controls .sector{top:calc(10px + env(safe-area-inset-top,0px));left:50%;max-width:180px}
+ .mobile-controls #bossHud{top:calc(78px + env(safe-area-inset-top,0px));width:34vw}.mobile-controls .sector-name{display:none}
+ .mobile-controls .hud-bottom,#movePad{bottom:calc(16px + env(safe-area-inset-bottom,0px))}.mobile-controls .touch-hint{bottom:calc(136px + env(safe-area-inset-bottom,0px))}
+ .mobile-controls #toast{top:116px;font-size:10px}.mobile-controls #banner{top:43%}.mobile-controls #bannerTitle{font-size:27px}
+ .mobile-controls .home-layout{display:grid;grid-template-columns:1fr 1fr;gap:25px;max-width:900px}.mobile-controls h1{font-size:53px;margin-bottom:12px}.mobile-controls .home-copy{font-size:11px;margin-bottom:12px}.mobile-controls .eyebrow{margin-bottom:12px}.mobile-controls .eyebrow .tag{font-size:8px}.mobile-controls .home-stats{display:none}
+ .mobile-controls .hangar{margin-top:0;padding:12px}.mobile-controls .rig{padding:8px 5px}.mobile-controls .rig svg{width:30px;height:30px}.mobile-controls .rig strong{font-size:11px}.mobile-controls .rig small{font-size:9px}.mobile-controls .auto-note{font-size:8px}.mobile-controls .start-row{gap:10px}.mobile-controls .start-row .primary{font-size:11px;padding:14px}.mobile-controls .start-note{font-size:8px}
+ .mobile-controls .upgrade-cards{grid-template-columns:repeat(3,1fr)}.mobile-controls .upgrade-card{min-height:200px;padding:15px}.mobile-controls .upgrade-icon{position:static;font-size:23px}.mobile-controls .upgrade-card strong{font-size:14px}.mobile-controls .upgrade-card p{font-size:11px}.mobile-controls .upgrade-header{margin-bottom:13px}.mobile-controls .upgrade-panel{padding:18px}
+}
