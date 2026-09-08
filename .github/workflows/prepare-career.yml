@@ -1,29 +1,46 @@
-name: Prepare online leaderboard release
+name: Prepare Neon Rift 1.3 release
 on:
   push:
-    branches: [online-leaderboard-20260907]
+    branches: [v13-progression-reliability-20260907]
     paths:
       - 'tools/mobile/**'
       - 'tools/engagement/**'
+      - 'tests/**'
       - '.github/workflows/prepare-career.yml'
+  workflow_dispatch:
 permissions:
   contents: write
 concurrency:
-  group: prepare-neon-rift-online
-  cancel-in-progress: false
+  group: prepare-neon-rift-v13
+  cancel-in-progress: true
 jobs:
-  assemble:
+  assemble-and-test:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 20
     steps:
       - name: Check out working branch
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
         with:
-          ref: online-leaderboard-20260907
-      - name: Rebuild mobile baseline
-        run: python3 tools/mobile/build.py
-      - name: Assemble career and online release
+          ref: v13-progression-reliability-20260907
+
+      - name: Guard and rebuild mobile baseline
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib
+          def blob(data): return hashlib.sha1((f'blob {len(data)}\0').encode()+data).hexdigest()
+          approved='482332b7f345d6f45dcfa5e2fb41bdc19b1f9142'
+          for name in ['index.html','neon-rift.html']:
+              p=Path(name)
+              if not p.exists() or blob(p.read_bytes()) != approved:
+                  raise SystemExit(f'Refusing to replace unexpected {name}')
+              p.unlink()
+          PY
+          python3 tools/mobile/build.py
+
+      - name: Assemble career, daily and managed-session release
         run: python3 tools/engagement/apply.py
+
       - name: Validate launch files and JavaScript
         run: |
           node - <<'JS'
@@ -34,32 +51,67 @@ jobs:
           const scripts=[...a.matchAll(/<script>([\s\S]*?)<\/script>/g)];
           if(!scripts.length) throw new Error('No inline scripts found');
           for(const s of scripts) new Function(s[1]);
-          const required=['careerScreen','profileBtn','careerPilotInput','achievementGrid','careerLeaderboard','resultCareerBtn','resultShareBtn'];
-          for(const id of required) if(!a.includes(`id="${id}"`)) throw new Error(`Missing ${id}`);
-          for(const token of ['recordCompletedRun(won, cause)','G.damageTaken','G.dashes++','G.overdrives++','NEON_RIFT_ONLINE','pjkdwekdtyzoqtrnhwaa.supabase.co']) if(!a.includes(token)) throw new Error(`Missing ${token}`);
-          console.log('Syntax, paired files, career instrumentation, and online config verified.');
+          const required=['careerScreen','profileBtn','careerPilotInput','achievementGrid','careerLeaderboard','dailyRunBtn','resumeRunBtn','runModeHud','dailyLeaderboard','careerTheme'];
+          for(const id of required) if(!a.includes(`id="${id}"`) && !a.includes(`id = '${id}'`) && !a.includes(`id = "${id}"`) && !a.includes(`id='${id}'`)) throw new Error(`Missing ${id}`);
+          for(const token of ['recordCompletedRun(won, cause)','G.damageTaken','G.dashes++','G.overdrives++','NEON_RIFT_ONLINE','game-session','startManagedRun','saveCheckpoint','sectorModifier','bossDisplayName']) if(!a.includes(token)) throw new Error(`Missing ${token}`);
+          console.log('Syntax, paired files, career instrumentation, daily mode, checkpoints and managed sessions verified.');
           JS
-      - name: Verify save compatibility and online safety
+
+      - name: Verify save compatibility and client security
         run: |
           python3 - <<'PY'
           from pathlib import Path
           s=Path('index.html').read_text()
           assert "const SAVE_KEY = 'neon-rift-save-v1'" in s
           assert "const CAREER_KEY = 'neon-rift-career-v1'" in s
+          assert "const PLAYER_KEY = 'neon-rift-player-v1'" in s
+          assert "const CHECKPOINT_KEY = 'neon-rift-checkpoint-v1'" in s
+          assert 'application-version" content="1.3.0"' in s
           assert "music: true" in s
           assert "localStorage.setItem(SAVE_KEY" in s
           assert "localStorage.setItem(CAREER_KEY" in s
-          assert "enabled: true" in s
-          assert "table: 'runs'" in s
-          assert 'service_role' not in s
+          config=s.split('window.NEON_RIFT_ONLINE = {',1)[1].split('};',1)[0]
+          assert "publishableKey: 'sb_publishable_" in config
+          assert "function: 'game-session'" in config
+          assert 'anonKey:' not in config
           assert 'sb_secret_' not in s
-          print('Local saves preserved; online leaderboard enabled with no server-secret key in the client.')
+          assert "'service_role'" not in s and '"service_role"' not in s
+          print('Original saves preserved; public client uses only the modern publishable key and managed Edge Function.')
           PY
+
+      - name: Install Chromium regression runtime
+        run: |
+          python3 -m pip install --disable-pip-version-check 'playwright>=1.55,<2'
+          python3 -m playwright install --with-deps chromium
+          python3 - <<'PY' >> "$GITHUB_ENV"
+          from playwright.sync_api import sync_playwright
+          with sync_playwright() as p:
+              print(f'CHROMIUM={p.chromium.executable_path}')
+          PY
+
+      - name: Run full mobile and desktop regression suite
+        run: |
+          cp index.html /tmp/neon-rift-1.3-production.html
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('index.html'); s=p.read_text()
+          old="window.NEON_RIFT_ONLINE = {\n  enabled: true,"
+          new="window.NEON_RIFT_ONLINE = {\n  enabled: false,"
+          assert s.count(old)==1
+          p.write_text(s.replace(old,new,1))
+          PY
+          python3 tests/startup_smoke.py
+          python3 tests/mobile_controls.py
+          cp /tmp/neon-rift-1.3-production.html index.html
+
+      - name: Run Neon Rift 1.3 managed-play regression suite
+        run: python3 tests/v13_regression.py
+
       - name: Commit assembled release
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -- index.html neon-rift.html
           if git diff --cached --quiet; then exit 0; fi
-          git commit -m 'Assemble Neon Rift online leaderboard release'
-          git push origin HEAD:online-leaderboard-20260907
+          git commit -m 'Assemble Neon Rift 1.3 release'
+          git push origin HEAD:v13-progression-reliability-20260907

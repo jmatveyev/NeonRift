@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#080c16">
 <meta name="description" content="A complete, offline arcade survival game. Nine sectors. Three bosses. One more run.">
 <title>NEON RIFT - Arcade Survival</title>
-<meta name="application-version" content="1.2.0-career">
+<meta name="application-version" content="1.3.0">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%23080c16'/%3E%3Cpath d='M32 8 54 52 32 42 10 52Z' fill='%2317353b' stroke='%2378f8df' stroke-width='3'/%3E%3Cpath d='m32 22 6 15H26Z' fill='%23e3fff8'/%3E%3C/svg%3E">
 <style>
 :root{color-scheme:dark;--bg:#080c16;--panel:rgba(12,19,32,.95);--line:rgba(161,196,227,.15);--text:#edf5fa;--muted:#8d9eae;--cyan:#78f8df;--blue:#6eb8ff;--gold:#ffd78b;--pink:#ff678e;--font:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
@@ -79,13 +79,20 @@
 @media(max-width:760px){.career-panel{padding:20px}.career-head{display:block}.career-status{display:inline-block;margin-top:10px}.career-grid{grid-template-columns:1fr}.achievement-grid{grid-template-columns:repeat(2,1fr)}.career-foot{display:grid;grid-template-columns:1fr}.career-foot .primary,.career-foot .secondary{width:100%}.career-note{order:2}.career-strip{width:100%;justify-content:space-between}.career-chip+.career-chip{padding-left:0;border-left:0}.career-actions{grid-template-columns:1fr}.result-career-actions{grid-template-columns:1fr}.career-run{grid-template-columns:27px minmax(90px,1fr) auto}.career-run-result{display:none}}
 @media(max-width:390px){.career-panel{padding:16px}.achievement-grid{grid-template-columns:1fr 1fr}.career-stat-grid{gap:6px}.career-run-score{font-size:13px}.career-strip{gap:7px;padding:9px}.career-chip{font-size:9px}}
 
+
+/* NEON RIFT 1.3 - daily challenge, checkpoint, mode and cosmetic progression UI */
+.v13-home-actions{display:flex;gap:10px;margin-top:10px;max-width:430px}.v13-home-actions .secondary{margin:0;width:auto;flex:1;min-height:42px;padding:10px 13px;border-color:#78f8df30;background:#101e2dcc}.v13-home-actions .secondary:hover{border-color:#78f8df70;background:#17313b}.v13-home-actions .v13-daily{color:var(--cyan)}.v13-date{display:block;font-size:8px;letter-spacing:.08em;color:var(--muted);margin-top:3px}.v13-resume{color:var(--gold)!important;border-color:#ffd78b35!important}.v13-mode-hud{margin:7px auto 0;min-height:11px;font-size:8px;font-weight:800;letter-spacing:.14em;color:var(--cyan);white-space:nowrap;text-shadow:0 1px 12px #000}.v13-identity{margin:8px 0 13px;font-size:8px;letter-spacing:.11em;color:#788da0;word-break:break-word}.v13-theme{display:flex;justify-content:space-between;align-items:center;gap:12px;border-top:1px solid var(--line);padding-top:15px;margin-top:16px}.v13-theme label{font-size:9px;letter-spacing:.14em;color:var(--muted);font-weight:800}.v13-theme select{max-width:210px;background:#101b2a;border:1px solid var(--line);border-radius:7px;color:#dce9f1;padding:8px 10px;font:700 10px var(--font);outline:none}.v13-theme select:focus-visible{border-color:var(--cyan);box-shadow:0 0 0 2px #78f8df20}.v13-daily-board{border-top:1px solid var(--line);margin-top:16px;padding-top:16px}.v13-daily-board .career-section-title h3{color:var(--gold)}
+@media(max-width:600px){.v13-home-actions{gap:7px;max-width:100%}.v13-home-actions .secondary{font-size:9px;padding:9px 8px}.v13-mode-hud{font-size:7px;margin-top:5px}.v13-theme{align-items:flex-start;flex-direction:column}.v13-theme select{width:100%;max-width:none}}
+@media(max-height:640px) and (min-width:601px){.v13-home-actions{margin-top:7px}.v13-home-actions .secondary{min-height:34px;padding:7px 10px}.v13-date{display:inline;margin-left:5px}}
+
 </style>
 <script>
 window.NEON_RIFT_ONLINE = {
   enabled: true,
   url: 'https://pjkdwekdtyzoqtrnhwaa.supabase.co',
-  anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBqa2R3ZWtkdHl6b3F0cm5od2FhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg4MjE5OTEsImV4cCI6MjEwNDM5Nzk5MX0.bdxTvio835csAibaAAVYz0lQiaraBzEC_VNrP84A6Mg',
-  table: 'runs'
+  publishableKey: 'sb_publishable_ew8oU5Zyzg8Wwq8aRCKbnw_EBb4ASGp',
+  table: 'runs',
+  function: 'game-session'
 };
 </script>
 </head>
@@ -116,14 +123,14 @@ window.NEON_RIFT_ONLINE = {
 <section class="screen" id="upgradeScreen" hidden aria-label="Choose an upgrade"><div class="panel upgrade-panel"><div class="upgrade-header"><div><span class="tag" id="upgradeTag">SECTOR SECURED</span><h2>A little more dangerous.</h2><p>Choose one upgrade. Make it your kind of chaos.</p></div><div class="patch" id="patchText">HULL PATCHED +18</div></div><div class="upgrade-cards" id="upgradeCards"></div><div class="upgrade-bottom"><span>Upgrades stack for the rest of this run.</span><button class="reroll" id="rerollBtn">&#x21BB; Reroll <span id="rerollCount">(2 left)</span></button></div></div></section>
 
 <section class="screen" id="careerScreen" hidden aria-label="Pilot career and run history"><div class="panel career-panel">
- <div class="career-head"><div><span class="tag">PILOT CAREER / LOCAL PROFILE</span><h2>Your signal persists.</h2><p>Scores, badges, and run history live in this browser. No account required.</p></div><span class="career-status" id="careerStorage">LOCAL SAVE ACTIVE</span></div>
+ <div class="career-head"><div><span class="tag">PILOT CAREER / LOCAL PROFILE</span><h2>Your signal persists.</h2><p>Career progress stays in this browser. A private anonymous player signal links only verified community run summaries. No login required.</p></div><span class="career-status" id="careerStorage">LOCAL SAVE ACTIVE</span></div>
  <div class="career-grid">
   <div class="career-card"><h3>PILOT IDENTITY</h3><input id="careerPilotInput" class="pilot-input" maxlength="16" autocomplete="off" spellcheck="false" aria-label="Pilot name"><div class="career-level-row"><div><span>CAREER LEVEL</span><strong id="careerLevel">01</strong></div><span id="careerXPText">0 / 900 XP</span></div><div class="xp-track"><div id="careerXPFill"></div></div><div class="career-stat-grid"><div class="career-stat"><strong id="careerRuns">0</strong><span>RECORDED RUNS</span></div><div class="career-stat"><strong id="careerWins">0</strong><span>RIFTS CLEARED</span></div><div class="career-stat"><strong id="careerKills">0</strong><span>TOTAL KILLS</span></div><div class="career-stat"><strong id="careerTime">0:00</strong><span>FLIGHT TIME</span></div></div><div class="career-actions"><button class="secondary" id="shareRunBtn">Share latest run</button><button class="secondary" id="copyPlaytestBtn">Copy playtest data</button></div></div>
-  <div class="career-card"><div class="career-section-title"><h3>LOCAL LEADERBOARD</h3><span>THIS BROWSER</span></div><div class="career-list" id="careerLeaderboard"></div><div class="cloud-board"><div class="career-section-title"><h3>COMMUNITY LEADERBOARD</h3><span id="cloudStatus" class="cloud-offline">BACKEND NOT CONNECTED</span></div><div class="career-list" id="cloudLeaderboard"></div></div></div>
+  <div class="career-card"><div class="career-section-title"><h3>LOCAL LEADERBOARD</h3><span>THIS BROWSER</span></div><div class="career-list" id="careerLeaderboard"></div><div class="cloud-board"><div class="career-section-title"><h3>COMMUNITY LEADERBOARD</h3><span id="cloudStatus" class="cloud-offline">CONNECTING</span></div><div class="career-list" id="cloudLeaderboard"></div></div></div>
   <div class="career-card"><div class="career-section-title"><h3>ACHIEVEMENTS</h3><span>8 SIGNAL BADGES</span></div><div class="achievement-grid" id="achievementGrid"></div></div>
   <div class="career-card"><div class="career-section-title"><h3>RECENT FLIGHT LOG</h3><span>LAST 5</span></div><div class="career-list" id="careerHistory"></div></div>
  </div>
- <div class="career-foot"><span class="career-note">Career data is separate from the original Neon Rift save, so existing personal bests and settings remain intact. Community leaderboard submissions contain only the run summary shown here.</span><button class="primary" id="careerBackBtn">BACK <span class="arrow" aria-hidden="true">&#x2192;</span></button></div>
+ <div class="career-foot"><span class="career-note">Personal bests, settings, career XP, cosmetics, and checkpoints stay local. Community boards receive only validated run summaries; telemetry records anonymous gameplay events used for balancing.</span><button class="primary" id="careerBackBtn">BACK <span class="arrow" aria-hidden="true">&#x2192;</span></button></div>
 </div></section>
 <section class="screen" id="resultScreen" hidden aria-label="Run results"><div class="panel"><span class="tag" id="resultTag">SIGNAL LOST</span><h2 id="resultTitle">That was a good run.</h2><p id="resultDescription">The rift keeps your ship. You keep the experience.</p><div class="result-score mono" id="resultScore">0</div><div class="record-flag" id="recordFlag">PERSONAL BEST</div><div class="result-stats"><div><strong id="resultSectors">0 / 9</strong><span>SECTORS CLEARED</span></div><div><strong id="resultKills">0</strong><span>ENEMIES DEFEATED</span></div><div><strong id="resultTime">0:00</strong><span>FLIGHT TIME</span></div></div><div class="result-build" id="resultBuild"></div><div class="run-bonus" id="resultCareerBonus">CAREER XP WILL BE RECORDED</div><div class="result-career-actions"><button class="secondary" id="resultCareerBtn">Pilot profile</button><button class="secondary" id="resultShareBtn">Share this run</button></div><button class="primary" id="retryBtn">ONE MORE RUN <span class="arrow" aria-hidden="true">&#x2192;</span></button><button class="secondary" id="endlessBtn" hidden>Push your luck: enter endless mode</button><button class="secondary" id="hangarBtn">Return to hangar</button></div></section>
 <footer class="footer-note" id="footer"><span>BUILT FOR THE ONE-MORE-RUN CROWD.</span><span>OFFLINE READY &nbsp; / &nbsp; NO ACCOUNTS. JUST ARCADE.</span></footer>
@@ -356,7 +363,7 @@ function clearInput() {
 }
 function showScreen(name) {
   for (const id of ['homeScreen', 'pauseScreen', 'upgradeScreen', 'careerScreen', 'resultScreen']) $(id).hidden = id !== name;
-  const inRun = !['home', 'manual'].includes(state);
+  const inRun = !['home', 'manual', 'career'].includes(state);
   $('hud').hidden = !inRun;
   $('pauseBtn').hidden = !['playing', 'paused'].includes(state);
   $('footer').hidden = state !== 'home';
@@ -405,10 +412,10 @@ function recalc() {
   player.crit = 0.05 + rank('crit') * 0.1;
   player.hp = Math.min(player.hp, player.maxHp);
 }
-function startRun() {
+function startRun(forcedSeed = null, restoring = false) {
   unlockAudio();
-  const seed = (Date.now() ^ Math.floor(Math.random() * 0xFFFFFFFF)) >>> 0;
-  rng = seededRandom(seed);
+  const seed = forcedSeed == null ? (Date.now() ^ Math.floor(Math.random() * 0xFFFFFFFF)) >>> 0 : (Number(forcedSeed) >>> 0);
+  rng = typeof trackedSeededRandom === 'function' ? trackedSeededRandom(seed) : seededRandom(seed);
   player = {
     x: WORLD.w / 2, y: WORLD.h / 2, r: 12, angle: -Math.PI / 2, rig: selectedRig,
     hp: RIGS[selectedRig].hp, maxHp: RIGS[selectedRig].hp, upgrades: {},
@@ -420,19 +427,20 @@ function startRun() {
   G = { seed, elapsed: 0, wave: 0, completed: 0, waveTime: 0, duration: 0, spawnClock: 0,
     kills: 0, score: 0, combo: 0, comboTimer: 0, maxCombo: 0, rerolls: 2,
     boss: null, bossDefeated: false, clearing: false, finishTime: 0,
-    endless: false, won: false, recordStart: save.best, tutorial: false, testInvulnerable: false, damageTaken: 0, dashes: 0, overdrives: 0 };
+    endless: false, won: false, recordStart: save.best, tutorial: false, testInvulnerable: false, damageTaken: 0, dashes: 0, overdrives: 0, rngCalls: 0, mode: 'standard', challengeDate: null, modifier: null, careerFinalized: false };
   enemies = []; shots = []; hostileShots = []; pickups = []; particles = []; rings = []; arcs = []; floaters = []; spawns = []; trails = [];
   nextId = 1; shake = 0; hurtFlash = 0; musicBeat = 0; nextMusic = 0;
   camera.x = player.x; camera.y = player.y;
   recalc();
-  save.runs++; save.rig = selectedRig; persist();
   state = 'playing'; showScreen(null); $('toast').classList.remove('visible'); toastTime = 0;
-  nextSector(); refreshHUD();
+  if (!restoring) { save.runs++; save.rig = selectedRig; persist(); nextSector(); }
+  refreshHUD();
 }
 function sectorName() { return SECTORS[G.wave - 1] || (G.wave % 3 === 0 ? 'RIFT ASCENDANT' : 'BEYOND THE SIGNAL'); }
 function nextSector() {
   G.wave++; G.clearing = false; G.finishTime = 0; G.bossDefeated = false; G.boss = null;
   G.duration = Math.min(38, 22 + G.wave * 1.5); G.waveTime = G.duration; G.spawnClock = 0.45;
+  if (typeof applySectorModifier === 'function') applySectorModifier();
   enemies = []; shots = []; hostileShots = []; spawns = []; pickups = [];
   player.invul = Math.max(player.invul, 1.1); player.dashCooldown = 0;
   state = 'playing'; showScreen(null);
@@ -476,7 +484,7 @@ function makeEnemy(type, x, y) {
   if (type === 'boss') {
     const maxHp = (stage === 1 ? 1650 : stage === 2 ? 3100 : 5000 + Math.max(0, stage - 3) * 1700) * (1 + Math.max(0, G.wave - 12) * 0.035);
     const e = { id: nextId++, type, x, y, vx: 0, vy: 0, r: 47 + Math.min(stage, 4) * 3, hp: maxHp, maxHp,
-      speed: 45 + Math.min(stage, 7) * 5, color: stage === 1 ? '#ff678e' : stage === 2 ? '#ffbb78' : '#c095ff',
+      speed: (45 + Math.min(stage, 7) * 5) * (typeof sectorEnemySpeed === 'function' ? sectorEnemySpeed() : 1), color: stage === 1 ? '#ff678e' : stage === 2 ? '#ffbb78' : '#c095ff',
       score: 3500 * stage, damage: 30, age: 0, hit: 0, warmup: 0.65, dead: false,
       stage, ringClock: 2.3, fireClock: 1.8, chargeClock: 6.8, windup: 0, chargeTime: 0, chargeAngle: 0, rotation: 0, orbitHit: 0 };
     G.boss = e; enemies.push(e); addRing(x, y, e.color, 115, 0.7, 10); return e;
@@ -484,7 +492,7 @@ function makeEnemy(type, x, y) {
   const spec = ENEMY[type] || ENEMY.seeker;
   const scaling = 1 + (G.wave - 1) * 0.14 + Math.max(0, G.wave - 9) * 0.035;
   const e = { id: nextId++, type, x, y, vx: 0, vy: 0, r: spec.r, hp: spec.hp * scaling, maxHp: spec.hp * scaling,
-    speed: spec.speed * (1 + Math.min(G.wave - 1, 18) * 0.025), color: spec.color, score: spec.score,
+    speed: spec.speed * (1 + Math.min(G.wave - 1, 18) * 0.025) * (typeof sectorEnemySpeed === 'function' ? sectorEnemySpeed() : 1), color: spec.color, score: spec.score,
     damage: spec.damage + Math.min(G.wave - 1, 20) * 0.5, age: 0, hit: 0, warmup: 0.25, dead: false,
     fireClock: random(1.2, 2.8), aimAngle: 0, aimLocked: false,
     chargeClock: random(1.1, 3.5), windup: 0, chargeTime: 0, chargeAngle: 0, orbitHit: 0 };
@@ -654,7 +662,7 @@ function firePlayer(target) {
 }
 function enemyBullet(x, y, angle, speed, radius = 5, color = '#ff809b', damage = 13) {
   if (hostileShots.length >= 300) return;
-  hostileShots.push({ x, y, px: x, py: y, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed, r: radius, color, damage, life: 7.5 });
+  hostileShots.push({ x, y, px: x, py: y, vx: Math.cos(angle) * speed * (typeof sectorBulletSpeed === 'function' ? sectorBulletSpeed() : 1), vy: Math.sin(angle) * speed * (typeof sectorBulletSpeed === 'function' ? sectorBulletSpeed() : 1), r: radius, color, damage, life: 7.5 });
 }
 function lightning(start, baseDamage) {
   const seen = new Set([start.id]);
@@ -896,7 +904,7 @@ function settleSector() {
   G.completed = G.wave;
   for (const p of pickups) collectPickup(p, true);
   pickups = []; enemies = []; hostileShots = []; shots = []; spawns = [];
-  const repaired = Math.min(18, player.maxHp - player.hp); player.hp += repaired;
+  const repaired = Math.min(typeof sectorRepairAmount === 'function' ? sectorRepairAmount() : 18, player.maxHp - player.hp); player.hp += repaired;
   G.score += 500 * G.wave;
   $('patchText').textContent = repaired > 0 ? `HULL PATCHED +${Math.round(repaired)}` : 'HULL INTEGRITY: FULL';
   if (G.wave === 9 && !G.endless) endRun(true);
@@ -975,7 +983,7 @@ function endRun(won, cause = '') {
   for (const u of ALL_UPGRADES) if (rank(u.id)) {
     const chip = document.createElement('span'); chip.className = 'build-chip'; chip.textContent = `${u.name} ${rank(u.id)}`; $('resultBuild').appendChild(chip);
   }
-  $('endlessBtn').hidden = !won; $('retryBtn').innerHTML = 'ONE MORE RUN <span class="arrow" aria-hidden="true">&#x2192;</span>';
+  $('endlessBtn').hidden = !won || (typeof activeMode !== 'undefined' && activeMode === 'daily'); $('retryBtn').innerHTML = 'ONE MORE RUN <span class="arrow" aria-hidden="true">&#x2192;</span>';
   sfx(won ? 'win' : 'death'); refreshHUD(); focusButton('retryBtn');
 }
 function returnHome() {
@@ -1014,7 +1022,7 @@ function simulate(dt) {
       } else if (G.waveTime > 0) {
         queueSpawn(pickEnemyType());
         if (G.wave >= 5 && rng() < 0.28) queueSpawn(pickEnemyType(), 1);
-        G.spawnClock = Math.max(0.30, 0.92 / (1 + (G.wave - 1) * 0.12));
+        G.spawnClock = Math.max(0.30, 0.92 / ((1 + (G.wave - 1) * 0.12) * (typeof sectorSpawnPressure === 'function' ? sectorSpawnPressure() : 1)));
       }
     }
     for (const s of spawns) {
@@ -1434,10 +1442,10 @@ document.querySelectorAll('[data-rig]').forEach((button) => {
     selectedRig = button.dataset.rig; save.rig = selectedRig; persist(); syncHome(); unlockAudio(); tone(350, 0.07, 'triangle', 0.09, 540);
   });
 });
-$('startBtn').addEventListener('click', startRun);
-$('retryBtn').addEventListener('click', startRun);
-$('hangarBtn').addEventListener('click', returnHome);
-$('quitBtn').addEventListener('click', returnHome);
+$('startBtn').addEventListener('click', () => { if (typeof startManagedRun === 'function') void startManagedRun('standard'); else startRun(); });
+$('retryBtn').addEventListener('click', () => { if (typeof startManagedRun === 'function') void startManagedRun(typeof lastMode === 'string' ? lastMode : 'standard'); else startRun(); });
+$('hangarBtn').addEventListener('click', () => returnHome());
+$('quitBtn').addEventListener('click', () => returnHome());
 $('howBtn').addEventListener('click', () => pauseGame(true));
 let pausePointerUntil = 0;
 function activatePause() { state === 'paused' ? resumeGame() : pauseGame(); }
@@ -1485,7 +1493,7 @@ addEventListener('keydown', (event) => {
   } else if (!event.repeat) {
     if ((code === 'KeyP' || code === 'Escape') && ['paused', 'manual'].includes(state)) { event.preventDefault(); resumeGame(); }
     else if (state === 'upgrade' && ['Digit1', 'Digit2', 'Digit3', 'Numpad1', 'Numpad2', 'Numpad3'].includes(code)) { event.preventDefault(); applyChoice(Number(code.slice(-1)) - 1); }
-    else if ((state === 'dead' || state === 'won') && code === 'KeyR') { event.preventDefault(); startRun(); }
+    else if ((state === 'dead' || state === 'won') && code === 'KeyR') { event.preventDefault(); if (typeof startManagedRun === 'function') void startManagedRun(typeof lastMode === 'string' ? lastMode : 'standard'); else startRun(); }
   }
   if (!event.repeat && code === 'KeyM') { event.preventDefault(); toggleSound(); }
   if (!event.repeat && code === 'KeyF') { event.preventDefault(); toggleFullscreen(); }
@@ -1608,7 +1616,7 @@ function frame(timestamp) {
   uiClock += elapsed; if (uiClock >= 0.08) { refreshHUD(); uiClock = 0; }
   render(); requestAnimationFrame(frame);
 }
-syncSettings(); syncHome(); syncCareerHome(); showScreen('homeScreen');
+syncSettings(); syncHome(); showScreen('homeScreen'); queueMicrotask(() => syncCareerHome());
 requestAnimationFrame(frame);
 
 
@@ -1809,9 +1817,14 @@ async function copyPlaytestData() {
 // window.NEON_RIFT_ONLINE = { enabled:true, url:'https://PROJECT.supabase.co', anonKey:'...', table:'runs' }
 function onlineConfig() {
   const cfg = window.NEON_RIFT_ONLINE;
-  return cfg && cfg.enabled === true && typeof cfg.url === 'string' && cfg.url && typeof cfg.anonKey === 'string' && cfg.anonKey ? { ...cfg, table: cfg.table || 'runs' } : null;
+  const key = cfg && (cfg.publishableKey || cfg.anonKey);
+  return cfg && cfg.enabled === true && typeof cfg.url === 'string' && cfg.url && typeof key === 'string' && key ? { ...cfg, key, table: cfg.table || 'runs' } : null;
 }
-function onlineHeaders(cfg) { return { apikey: cfg.anonKey, Authorization: `Bearer ${cfg.anonKey}`, 'Content-Type': 'application/json' }; }
+function onlineHeaders(cfg) {
+  const headers = { apikey: cfg.key, 'Content-Type': 'application/json' };
+  if (cfg.key.startsWith('eyJ')) headers.Authorization = `Bearer ${cfg.key}`;
+  return headers;
+}
 async function submitOnlineRun(summary) {
   const cfg = onlineConfig(); if (!cfg) return;
   const body = {
@@ -1856,6 +1869,373 @@ $('resultShareBtn').addEventListener('click', () => { void shareLastRun(); });
 $('copyPlaytestBtn').addEventListener('click', () => { void copyPlaytestData(); });
 
 
+
+// NEON RIFT 1.3 - managed runs, daily challenge, checkpoints, telemetry, modifiers and cosmetic progression.
+const V13_VERSION = '1.3.0';
+const PLAYER_KEY = 'neon-rift-player-v1';
+const CHECKPOINT_KEY = 'neon-rift-checkpoint-v1';
+const CHECKPOINT_MAX_AGE = 7 * 24 * 60 * 60 * 1000;
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const THEMES = {
+  cyan: { name: 'SIGNAL CYAN', level: 1, color: '#78f8df' },
+  violet: { name: 'VOID VIOLET', level: 3, color: '#a7a1ff' },
+  gold: { name: 'RIFT GOLD', level: 5, color: '#ffd78b' },
+  rose: { name: 'NOVA ROSE', level: 8, color: '#ff7ca6' }
+};
+const SECTOR_MODIFIERS = [
+  { id: 'clear', name: 'CLEAR SIGNAL', detail: 'Stable combat conditions.', enemySpeed: 1, bulletSpeed: 1, spawnPressure: 1, duration: 1, repair: 18 },
+  { id: 'ion', name: 'ION STORM', detail: 'Hostile projectiles travel faster.', enemySpeed: 1, bulletSpeed: 1.18, spawnPressure: 1, duration: 1, repair: 18 },
+  { id: 'hunter', name: 'HUNTER GRID', detail: 'The swarm moves and arrives faster.', enemySpeed: 1.14, bulletSpeed: 1, spawnPressure: 1.08, duration: 1, repair: 18 },
+  { id: 'night', name: 'LONG NIGHT', detail: 'Survival sectors last a little longer.', enemySpeed: 1, bulletSpeed: 1, spawnPressure: 1, duration: 1.18, repair: 18 },
+  { id: 'repair', name: 'REPAIR WINDOW', detail: 'Sector clearance restores extra hull.', enemySpeed: 1, bulletSpeed: 1, spawnPressure: 1, duration: 1, repair: 30 }
+];
+const BOSS_NAMES = { 1: 'THE GATEKEEPER', 2: 'VOID WARDEN', 3: 'RIFT SOVEREIGN' };
+let activeMode = 'standard';
+let lastMode = 'standard';
+let managedSession = null;
+let startingManagedRun = false;
+let playerIdentity = loadPlayerIdentity();
+
+function randomUUID() {
+  if (crypto.randomUUID) return crypto.randomUUID();
+  const bytes = new Uint8Array(16); crypto.getRandomValues(bytes);
+  bytes[6] = (bytes[6] & 0x0f) | 0x40; bytes[8] = (bytes[8] & 0x3f) | 0x80;
+  const hex = [...bytes].map((v) => v.toString(16).padStart(2, '0')).join('');
+  return `${hex.slice(0,8)}-${hex.slice(8,12)}-${hex.slice(12,16)}-${hex.slice(16,20)}-${hex.slice(20)}`;
+}
+function loadPlayerIdentity() {
+  try {
+    const value = JSON.parse(localStorage.getItem(PLAYER_KEY) || '{}');
+    if (UUID_RE.test(String(value.playerId || ''))) return { playerId: value.playerId, createdAt: value.createdAt || new Date().toISOString() };
+  } catch (_) { /* A fresh anonymous signal is harmless. */ }
+  const identity = { playerId: randomUUID(), createdAt: new Date().toISOString() };
+  try { localStorage.setItem(PLAYER_KEY, JSON.stringify(identity)); } catch (_) { /* Session identity still works. */ }
+  return identity;
+}
+function todayUTC() { return new Date().toISOString().slice(0, 10); }
+function dailySeedClient(day = todayUTC()) {
+  let h = 2166136261 >>> 0;
+  for (const c of `NEON-RIFT-DAILY-${day}`) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619) >>> 0; }
+  return h >>> 0;
+}
+function trackedSeededRandom(seed, skip = 0) {
+  const inner = seededRandom(seed >>> 0);
+  for (let i = 0; i < Math.max(0, Math.floor(skip)); i++) inner();
+  return () => { if (G) G.rngCalls = (G.rngCalls || 0) + 1; return inner(); };
+}
+function sectorModifier(seed = G?.seed || 0, wave = G?.wave || 1) {
+  let h = (seed ^ Math.imul(wave, 0x9E3779B1)) >>> 0;
+  h ^= h >>> 16; h = Math.imul(h, 0x7feb352d); h ^= h >>> 15; h = Math.imul(h, 0x846ca68b); h ^= h >>> 16;
+  return SECTOR_MODIFIERS[(h >>> 0) % SECTOR_MODIFIERS.length];
+}
+function applySectorModifier() {
+  if (!G) return;
+  G.mode = activeMode;
+  G.challengeDate = managedSession?.challengeDate || (activeMode === 'daily' ? todayUTC() : null);
+  G.modifier = sectorModifier(G.seed, G.wave);
+  if (G.wave % 3 !== 0 && G.modifier.duration !== 1) {
+    G.duration *= G.modifier.duration; G.waveTime = G.duration;
+  }
+  syncRunModeHud();
+}
+function sectorEnemySpeed() { return G?.modifier?.enemySpeed || 1; }
+function sectorBulletSpeed() { return G?.modifier?.bulletSpeed || 1; }
+function sectorSpawnPressure() { return G?.modifier?.spawnPressure || 1; }
+function sectorRepairAmount() { return G?.modifier?.repair || 18; }
+function bossDisplayName(stage) { return BOSS_NAMES[Math.min(3, Math.max(1, stage || 1))] || 'RIFT ENTITY'; }
+
+function onlineConfigV13() {
+  const cfg = window.NEON_RIFT_ONLINE;
+  if (!cfg || cfg.enabled !== true || typeof cfg.url !== 'string' || !cfg.url) return null;
+  const key = cfg.publishableKey || cfg.anonKey;
+  if (typeof key !== 'string' || !key) return null;
+  return { ...cfg, key, table: cfg.table || 'runs', function: cfg.function || 'game-session' };
+}
+onlineConfig = onlineConfigV13;
+onlineHeaders = (cfg) => ({ apikey: cfg.key, 'Content-Type': 'application/json' });
+
+async function callGameSession(action, payload = {}, timeout = 4500) {
+  const cfg = onlineConfigV13(); if (!cfg) throw new Error('backend_not_configured');
+  const controller = new AbortController(); const timer = setTimeout(() => controller.abort(), timeout);
+  try {
+    const response = await fetch(`${cfg.url.replace(/\/$/, '')}/functions/v1/${encodeURIComponent(cfg.function)}`, {
+      method: 'POST', headers: onlineHeaders(cfg), signal: controller.signal,
+      body: JSON.stringify({ action, ...payload })
+    });
+    let data = {}; try { data = await response.json(); } catch (_) { /* Keep status-based error. */ }
+    if (!response.ok) throw new Error(data.error || `HTTP_${response.status}`);
+    return data;
+  } finally { clearTimeout(timer); }
+}
+function platformLabel() {
+  const orientation = innerWidth >= innerHeight ? 'landscape' : 'portrait';
+  return `${coarse ? 'touch' : 'desktop'}-${orientation}`;
+}
+async function startManagedRun(mode = 'standard') {
+  if (startingManagedRun) return;
+  startingManagedRun = true; activeMode = mode === 'daily' ? 'daily' : 'standard'; lastMode = activeMode;
+  clearCheckpoint();
+  const button = activeMode === 'daily' ? $('dailyRunBtn') : $('startBtn');
+  const oldText = button?.innerHTML; if (button) { button.disabled = true; button.textContent = 'LINKING SIGNAL...'; }
+  let seed = activeMode === 'daily' ? dailySeedClient() : null;
+  managedSession = null;
+  try {
+    const session = await callGameSession('start', {
+      player_id: playerIdentity.playerId, pilot: career.pilot, rig: selectedRig, mode: activeMode,
+      game_version: V13_VERSION, platform: platformLabel()
+    });
+    seed = Number(session.seed) >>> 0;
+    managedSession = { runId: session.run_id, token: session.token, seed, mode: session.mode, challengeDate: session.challenge_date || null, finalizing: false, finalized: false };
+  } catch (_) {
+    toast(activeMode === 'daily' ? 'DAILY PRACTICE MODE - COMMUNITY SYNC UNAVAILABLE' : 'COMMUNITY SYNC UNAVAILABLE - LOCAL RUN STARTED', 3.4);
+  }
+  startRun(seed, false);
+  if (G) { G.mode = activeMode; G.challengeDate = managedSession?.challengeDate || (activeMode === 'daily' ? todayUTC() : null); }
+  syncRunModeHud();
+  if (button) { button.disabled = false; if (oldText) button.innerHTML = oldText; }
+  startingManagedRun = false;
+}
+async function sendRunEvent(eventName, eventData = {}, wave = G?.wave || 0) {
+  if (!managedSession || managedSession.finalized || managedSession.finalizing) return;
+  try {
+    await callGameSession('event', { run_id: managedSession.runId, token: managedSession.token, event_name: eventName, wave, event_data: eventData }, 3500);
+  } catch (_) { /* Telemetry can fail without touching gameplay. */ }
+}
+
+function cleanCheckpoint(raw) {
+  if (!raw || raw.version !== 1 || Date.now() - Number(raw.savedAt || 0) > CHECKPOINT_MAX_AGE) return null;
+  if (!raw.g || !raw.player || !Array.isArray(raw.choices)) return null;
+  if (!['standard','daily'].includes(raw.mode) || !RIGS[raw.player.rig]) return null;
+  return raw;
+}
+function loadCheckpoint() {
+  try { return cleanCheckpoint(JSON.parse(localStorage.getItem(CHECKPOINT_KEY) || 'null')); } catch (_) { return null; }
+}
+function clearCheckpoint() { try { localStorage.removeItem(CHECKPOINT_KEY); } catch (_) { /* Nothing to clear. */ } syncCheckpointButton(); }
+function saveCheckpoint() {
+  if (!G || !player || state !== 'upgrade' || G.endless || !choices.length || G.wave >= 9) return;
+  const checkpoint = {
+    version: 1, savedAt: Date.now(), mode: activeMode, session: managedSession ? { ...managedSession, finalizing: false } : null,
+    seed: G.seed >>> 0, challengeDate: G.challengeDate || null,
+    g: { elapsed: G.elapsed, wave: G.wave, completed: G.completed, kills: G.kills, score: G.score, combo: G.combo, comboTimer: G.comboTimer,
+      maxCombo: G.maxCombo, rerolls: G.rerolls, recordStart: G.recordStart, damageTaken: G.damageTaken || 0, dashes: G.dashes || 0,
+      overdrives: G.overdrives || 0, rngCalls: G.rngCalls || 0 },
+    player: { rig: player.rig, hp: player.hp, energy: player.energy, shieldReady: player.shieldReady, shieldClock: player.shieldClock,
+      repairKills: player.repairKills, readyAnnounced: player.readyAnnounced, upgrades: { ...player.upgrades } },
+    choices: choices.map((item) => item.id)
+  };
+  try { localStorage.setItem(CHECKPOINT_KEY, JSON.stringify(checkpoint)); } catch (_) { /* Resume is optional. */ }
+  syncCheckpointButton();
+}
+function restoreCheckpoint() {
+  const checkpoint = loadCheckpoint(); if (!checkpoint) { clearCheckpoint(); toast('NO VALID CHECKPOINT FOUND', 2.2); return; }
+  activeMode = checkpoint.mode; lastMode = checkpoint.mode; managedSession = checkpoint.session || null;
+  selectedRig = checkpoint.player.rig;
+  startRun(checkpoint.seed, true);
+  if (!G || !player) return;
+  Object.assign(G, checkpoint.g, { seed: checkpoint.seed >>> 0, mode: checkpoint.mode, challengeDate: checkpoint.challengeDate, clearing: true, boss: null, bossDefeated: false, finishTime: 0 });
+  player.upgrades = { ...checkpoint.player.upgrades }; recalc();
+  player.hp = clamp(Number(checkpoint.player.hp) || player.maxHp, 1, player.maxHp); player.energy = clamp(Number(checkpoint.player.energy) || 0, 0, 100);
+  player.shieldReady = Boolean(checkpoint.player.shieldReady); player.shieldClock = Math.max(0, Number(checkpoint.player.shieldClock) || 0);
+  player.repairKills = Math.max(0, Math.floor(Number(checkpoint.player.repairKills) || 0)); player.readyAnnounced = Boolean(checkpoint.player.readyAnnounced);
+  rng = trackedSeededRandom(checkpoint.seed, checkpoint.g.rngCalls || 0); G.rngCalls = checkpoint.g.rngCalls || 0;
+  choices = checkpoint.choices.map((id) => ALL_UPGRADES.find((item) => item.id === id)).filter(Boolean).slice(0, 3);
+  state = 'upgrade'; showScreen('upgradeScreen');
+  $('upgradeTag').textContent = `CHECKPOINT RESTORED / SECTOR ${String(G.wave).padStart(2, '0')} SECURED`;
+  $('patchText').textContent = `RESUME / ${activeMode === 'daily' ? 'DAILY SIGNAL' : 'STANDARD RUN'}`;
+  renderUpgradeCards(); refreshHUD(); syncRunModeHud();
+  void sendRunEvent('run_resume', { saved_seconds: Math.round(G.elapsed), choices: choices.map((item) => item.id) }, G.wave);
+}
+function syncCheckpointButton() {
+  if (!$('resumeRunBtn')) return;
+  const checkpoint = loadCheckpoint();
+  $('resumeRunBtn').hidden = !checkpoint;
+  if (checkpoint) $('resumeRunBtn').textContent = `RESUME CHECKPOINT / SECTOR ${String(checkpoint.g.wave + 1).padStart(2, '0')}`;
+}
+
+function ensureV13UI() {
+  if (!$('dailyRunBtn')) {
+    const daily = document.createElement('button'); daily.id = 'dailyRunBtn'; daily.className = 'secondary v13-daily'; daily.type = 'button';
+    daily.innerHTML = `DAILY SIGNAL <span class="v13-date">${todayUTC()}</span>`; daily.addEventListener('click', () => { void startManagedRun('daily'); });
+    const resume = document.createElement('button'); resume.id = 'resumeRunBtn'; resume.className = 'secondary v13-resume'; resume.type = 'button'; resume.hidden = true;
+    resume.addEventListener('click', restoreCheckpoint);
+    const actions = document.createElement('div'); actions.className = 'v13-home-actions'; actions.append(daily, resume);
+    $('startBtn').closest('.start-row')?.after(actions);
+  }
+  if (!$('runModeHud')) {
+    const badge = document.createElement('div'); badge.id = 'runModeHud'; badge.className = 'v13-mode-hud';
+    document.querySelector('.sector')?.appendChild(badge);
+  }
+  if (!$('dailyLeaderboard')) {
+    const board = document.createElement('div'); board.className = 'cloud-board v13-daily-board';
+    board.innerHTML = '<div class="career-section-title"><h3>DAILY SIGNAL</h3><span id="dailyStatus" class="cloud-offline">TODAY / UTC</span></div><div class="career-list" id="dailyLeaderboard"></div>';
+    $('cloudLeaderboard')?.closest('.cloud-board')?.after(board);
+  }
+  if (!$('careerIdentity')) {
+    const identity = document.createElement('div'); identity.id = 'careerIdentity'; identity.className = 'v13-identity';
+    identity.textContent = `PLAYER SIGNAL ${playerIdentity.playerId.slice(0, 8).toUpperCase()} / BROWSER IDENTITY`;
+    $('careerPilotInput')?.after(identity);
+  }
+  if (!$('careerTheme')) {
+    const wrap = document.createElement('div'); wrap.className = 'v13-theme';
+    const label = document.createElement('label'); label.htmlFor = 'careerTheme'; label.textContent = 'COSMETIC SIGNAL';
+    const select = document.createElement('select'); select.id = 'careerTheme'; select.addEventListener('change', () => {
+      const selected = select.value; const level = levelFromXP(career.xp);
+      if (!THEMES[selected] || level < THEMES[selected].level) return;
+      career.theme = selected; persistCareer(); applyCareerTheme(); renderThemeOptions();
+    });
+    wrap.append(label, select); $('careerXPFill')?.closest('.career-card')?.appendChild(wrap);
+  }
+  syncCheckpointButton(); renderThemeOptions(); applyCareerTheme();
+}
+function readSavedTheme() {
+  if (THEMES[career.theme]) return career.theme;
+  try { const raw = JSON.parse(localStorage.getItem(CAREER_KEY) || '{}'); if (THEMES[raw.theme]) return raw.theme; } catch (_) { /* Default below. */ }
+  return 'cyan';
+}
+function applyCareerTheme() {
+  career.theme = readSavedTheme();
+  const level = levelFromXP(career.xp); if (level < THEMES[career.theme].level) career.theme = 'cyan';
+  document.documentElement.style.setProperty('--cyan', THEMES[career.theme].color);
+}
+function renderThemeOptions() {
+  if (!$('careerTheme')) return;
+  const level = levelFromXP(career.xp); career.theme = readSavedTheme();
+  $('careerTheme').replaceChildren(...Object.entries(THEMES).map(([id, theme]) => {
+    const option = document.createElement('option'); option.value = id; option.disabled = level < theme.level;
+    option.textContent = level >= theme.level ? theme.name : `${theme.name} / LV ${theme.level}`; return option;
+  }));
+  if (level < (THEMES[career.theme]?.level || 1)) career.theme = 'cyan'; $('careerTheme').value = career.theme;
+}
+function syncRunModeHud() {
+  if (!$('runModeHud')) return;
+  if (!G || !['playing','paused','upgrade'].includes(state)) { $('runModeHud').textContent = ''; return; }
+  const modifier = G.modifier || sectorModifier(G.seed, Math.max(1, G.wave));
+  $('runModeHud').textContent = `${activeMode === 'daily' ? 'DAILY' : 'STANDARD'} / ${modifier.name}`;
+  $('runModeHud').title = modifier.detail;
+}
+
+const renderCareerV12 = renderCareer;
+renderCareer = function renderCareerV13() {
+  ensureV13UI(); applyCareerTheme(); renderCareerV12(); renderThemeOptions();
+  if ($('careerIdentity')) $('careerIdentity').textContent = `PLAYER SIGNAL ${playerIdentity.playerId.slice(0, 8).toUpperCase()} / BROWSER IDENTITY`;
+};
+
+refreshOnlineLeaderboard = async function refreshOnlineLeaderboardV13() {
+  if (!$('cloudStatus')) return;
+  ensureV13UI();
+  const cfg = onlineConfigV13();
+  if (!cfg) {
+    $('cloudStatus').textContent = 'COMMUNITY BOARD OFFLINE'; $('dailyStatus').textContent = 'DAILY BOARD OFFLINE';
+    $('cloudLeaderboard').replaceChildren(emptyCareer('LOCAL CAREER REMAINS AVAILABLE.'));
+    $('dailyLeaderboard').replaceChildren(emptyCareer('DAILY PRACTICE STILL WORKS OFFLINE.')); return;
+  }
+  $('cloudStatus').textContent = 'SYNCING ALL-TIME BOARD...'; $('dailyStatus').textContent = `SYNCING ${todayUTC()}...`;
+  try {
+    const fields = 'pilot,score,kills,sectors,seconds,rig,max_combo,won,played_at,mode,challenge_date';
+    const base = `${cfg.url.replace(/\/$/, '')}/rest/v1/${encodeURIComponent(cfg.table)}`;
+    const headers = { apikey: cfg.key };
+    const [allTimeResponse, dailyResponse] = await Promise.all([
+      fetch(`${base}?select=${fields}&mode=eq.standard&order=score.desc&limit=10`, { headers }),
+      fetch(`${base}?select=${fields}&mode=eq.daily&challenge_date=eq.${todayUTC()}&order=score.desc&limit=10`, { headers })
+    ]);
+    if (!allTimeResponse.ok || !dailyResponse.ok) throw new Error('leaderboard_fetch_failed');
+    const [allRows, dailyRows] = await Promise.all([allTimeResponse.json(), dailyResponse.json()]);
+    const mapRows = (rows, prefix) => Array.isArray(rows) ? rows.map((r, i) => cleanHistoryEntry({ id: `${prefix}-${i}`, pilot: r.pilot, score: r.score, kills: r.kills, sectors: r.sectors, seconds: r.seconds, rig: r.rig, maxCombo: r.max_combo, won: r.won, playedAt: r.played_at })) : [];
+    const allMapped = mapRows(allRows, 'all'); const dailyMapped = mapRows(dailyRows, 'daily');
+    $('cloudLeaderboard').replaceChildren(...(allMapped.length ? allMapped.map((r, i) => makeRunRow(r, i, true)) : [emptyCareer('NO VERIFIED STANDARD RUNS YET')]));
+    $('dailyLeaderboard').replaceChildren(...(dailyMapped.length ? dailyMapped.map((r, i) => makeRunRow(r, i, true)) : [emptyCareer('NO VERIFIED DAILY RUNS YET')]));
+    $('cloudStatus').textContent = 'ALL-TIME / VERIFIED'; $('cloudStatus').className = 'cloud-online';
+    $('dailyStatus').textContent = `${todayUTC()} / VERIFIED`; $('dailyStatus').className = 'cloud-online';
+  } catch (_) {
+    $('cloudStatus').textContent = 'ALL-TIME BOARD UNAVAILABLE'; $('dailyStatus').textContent = 'DAILY BOARD UNAVAILABLE';
+    $('cloudLeaderboard').replaceChildren(emptyCareer('LOCAL SAVE UNAFFECTED.'));
+    $('dailyLeaderboard').replaceChildren(emptyCareer('DAILY PRACTICE REMAINS AVAILABLE.'));
+  }
+};
+
+submitOnlineRun = async function submitManagedRun(summary) {
+  if (!managedSession || managedSession.finalized || managedSession.finalizing) return;
+  managedSession.finalizing = true;
+  try {
+    await callGameSession('finish', {
+      run_id: managedSession.runId, token: managedSession.token, score: summary.score, kills: summary.kills, sectors: summary.sectors,
+      seconds: Math.round(summary.seconds), max_combo: summary.maxCombo, won: summary.won, damage_taken: summary.damageTaken,
+      dashes: summary.dashes, overdrives: summary.overdrives, game_version: V13_VERSION,
+      telemetry: { cause: summary.cause, upgrades: summary.upgrades.map((u) => `${u.name}:${u.rank}`), modifier: G?.modifier?.id || null, platform: platformLabel() }
+    }, 6000);
+    managedSession.finalized = true;
+  } catch (_) { managedSession.finalizing = false; }
+};
+
+recordCompletedRun = function recordCompletedRunV13(won, cause = '') {
+  if (!G || !player || G.careerFinalized) return;
+  G.careerFinalized = true;
+  const summary = {
+    id: managedSession?.runId || `${Date.now().toString(36)}-${(G.seed >>> 0).toString(36)}`, playedAt: new Date().toISOString(), pilot: career.pilot,
+    score: Math.floor(G.score), kills: G.kills, sectors: G.completed, seconds: G.elapsed, rig: player.rig,
+    maxCombo: G.maxCombo, damageTaken: Math.max(0, Math.round(G.damageTaken || 0)), dashes: G.dashes || 0,
+    overdrives: G.overdrives || 0, won: Boolean(won), cause: cause || '', mode: activeMode, challengeDate: G.challengeDate || null,
+    upgrades: ALL_UPGRADES.filter((u) => rank(u.id)).map((u) => ({ name: u.name, rank: rank(u.id) }))
+  };
+  summary.xpGained = runXP(summary); career.xp += summary.xpGained; career.totalRuns++; career.totalWins += summary.won ? 1 : 0;
+  career.totalKills += summary.kills; career.totalSeconds += summary.seconds; career.bestCombo = Math.max(career.bestCombo, summary.maxCombo);
+  if (summary.won) career.winsByRig[summary.rig] = (career.winsByRig[summary.rig] || 0) + 1;
+  career.history.unshift(summary); career.history = career.history.slice(0, CAREER_HISTORY_LIMIT);
+  const unlocked = unlockCareerAchievements(summary); persistCareer(); lastRunSummary = summary; clearCheckpoint();
+  void submitOnlineRun(summary);
+  requestAnimationFrame(() => { updateResultCareer(summary, unlocked); syncCareerHome(); applyCareerTheme(); });
+};
+
+const offerUpgradeV12 = offerUpgrade;
+offerUpgrade = function offerUpgradeV13() {
+  offerUpgradeV12();
+  if (!G?.endless) {
+    saveCheckpoint();
+    void sendRunEvent('sector_clear', { score: Math.floor(G.score), kills: G.kills, damage_taken: Math.round(G.damageTaken || 0), modifier: G.modifier?.id || 'clear' }, G.wave);
+  }
+};
+const applyChoiceV12 = applyChoice;
+applyChoice = function applyChoiceV13(index) {
+  const chosen = choices[index];
+  if (chosen && state === 'upgrade') void sendRunEvent('upgrade_choice', { upgrade: chosen.id, next_rank: rank(chosen.id) + 1, rerolls_left: G.rerolls }, G.wave);
+  applyChoiceV12(index); syncRunModeHud();
+};
+const refreshHUDV12 = refreshHUD;
+refreshHUD = function refreshHUDV13() {
+  refreshHUDV12(); syncRunModeHud();
+  if (G?.boss && !G.boss.dead && $('bossName')) $('bossName').textContent = `${bossDisplayName(G.boss.stage)}${G.boss.hp < G.boss.maxHp * 0.48 ? ' / ENRAGED' : ''}`;
+};
+const updateBossV12 = updateBoss;
+updateBoss = function updateBossV13(e, dt) {
+  updateBossV12(e, dt);
+  if (e.dead || e.warmup > 0 || state !== 'playing') return;
+  if (e.signatureTell > 0) {
+    const before = e.signatureTell; e.signatureTell -= dt;
+    if (before > 0 && e.signatureTell <= 0) {
+      const aim = Math.atan2(player.y - e.y, player.x - e.x);
+      if (e.stage === 1) for (let i = 0; i < 6; i++) enemyBullet(e.x, e.y, i * TAU / 6 + e.rotation, 145, 5, e.color, 8);
+      else if (e.stage === 2) for (const spread of [-0.24, -0.12, 0, 0.12, 0.24]) enemyBullet(e.x, e.y, aim + spread, 175, 5, e.color, 10);
+      else for (let i = 0; i < 10; i++) enemyBullet(e.x, e.y, i * TAU / 10 + e.rotation, 185, 5, e.color, 11);
+    }
+    return;
+  }
+  e.signatureClock = (e.signatureClock ?? (4.8 + e.stage * 0.25)) - dt;
+  if (e.signatureClock <= 0) { e.signatureClock = e.stage === 3 ? 4.4 : 5.2; e.signatureTell = 0.65; addRing(e.x, e.y, e.color, 180, 0.65, 5); }
+};
+
+const returnHomeV12 = returnHome;
+returnHome = function returnHomeV13() {
+  if (G && managedSession && !managedSession.finalizing && !managedSession.finalized && !G.careerFinalized) void sendRunEvent('run_abandon', { wave: G.wave, score: Math.floor(G.score) }, G.wave);
+  clearCheckpoint(); returnHomeV12(); managedSession = null; activeMode = 'standard'; syncRunModeHud();
+};
+
+addEventListener('error', (event) => { if (managedSession && !managedSession.finalized) void sendRunEvent('client_error', { message: String(event.message || 'script error').slice(0, 96) }, G?.wave || 0); });
+addEventListener('unhandledrejection', (event) => { if (managedSession && !managedSession.finalized) void sendRunEvent('client_error', { message: String(event.reason?.message || event.reason || 'promise rejection').slice(0, 96) }, G?.wave || 0); });
+addEventListener('keydown', (event) => { if (state === 'career' && event.code === 'Escape') { event.preventDefault(); event.stopImmediatePropagation(); closeCareer(); } }, true);
+
+queueMicrotask(() => { ensureV13UI(); applyCareerTheme(); syncCheckpointButton(); });
+
 // Explicitly opt-in deterministic inspection hooks for browser QA. Absent in normal play.
 if (new URL(location.href).searchParams.has('test')) {
   const snapshot = () => ({
@@ -1869,7 +2249,7 @@ if (new URL(location.href).searchParams.has('test')) {
     enemies: enemies.length, hostileShots: hostileShots.length, shots: shots.length, pickups: pickups.length,
     spawns: spawns.length, particles: particles.length, choices: choices.map((c) => c.id),
     boss: G?.boss && !G.boss.dead ? { hp: G.boss.hp, maxHp: G.boss.maxHp, stage: G.boss.stage, x: G.boss.x, y: G.boss.y } : null,
-    save: { ...save }, storageAvailable, career: careerSnapshot(),
+    save: { ...save }, storageAvailable, career: careerSnapshot(), mode: G?.mode || 'standard', challengeDate: G?.challengeDate || null, modifier: G?.modifier?.id || null,
     controls: { mobile: coarse, leftHanded: save.leftHanded, pointerId: touch.id, x: touch.x, y: touch.y, amount: touch.amount, actionPointers: actionPointers.size, viewport: [W, H], pixelRatio: dpr }
   });
   window.__NEON_RIFT_TEST__ = {

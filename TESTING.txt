@@ -1,39 +1,130 @@
-NEON RIFT - BUILD VALIDATION
-============================
+NEON RIFT 1.3 - RELEASE VALIDATION
+==================================
 
-Automated testing was performed in headless Chromium, with real
-keyboard events and Chromium's emulated touchscreen input.
+The Neon Rift 1.3 release is assembled and validated in GitHub Actions using
+headless Chromium with real keyboard events, Chromium emulated touchscreen input,
+network interception for managed Supabase client tests, and strict source/build
+guards.
 
-60 functional checks covered:
-- Boot, ship selection, movement, auto-fire, and projectile hits.
-- Keyboard and touch dashes, Overdrive, pause, and resume.
-- Upgrade cards, number-key selection, rerolls, and rank application.
-- Nine-sector progression, victory, endless continuation, and death.
-- Restart/reset behavior and automatic pause when focus is lost.
-- Save serialization and restoration, malformed save data, and
-  operation with browser storage unavailable.
-- Shield absorption/recharge, hull upgrades, and dash protection.
-- Repeatable upgrades after the ordinary upgrade pool is exhausted.
-- Layouts at 1440x900, 1280x800, 1024x600, 844x390, 390x844,
-  and 320x568.
+FINAL AUTOMATED RESULT
+======================
+Startup smoke: PASS
+Legacy mobile/desktop regression suite: 147 / 147 assertions PASS
+Neon Rift 1.3 managed-play regression suite: 40 / 40 assertions PASS
 
-Six complete or until-death combat simulations covered all three
-ships. Assisted runs reached the ending with each ship. An unassisted
-basic automated pilot also completed a Striker run. Separate long-run
-simulation started at sector 50 with a fully upgraded build and
-validated bounded entity counts and finite resource values across
-more than six additional minutes of simulated combat.
+That is 187 explicit browser assertions plus the separate startup smoke gate.
+The production launch files also pass JavaScript syntax, save-compatibility,
+client-credential, and byte-identity validation before the release is committed.
 
-No JavaScript runtime errors were observed in these checks.
-The JavaScript also passed Node's syntax check.
+LEGACY MOBILE / DESKTOP REGRESSION - 147 ASSERTIONS
+===================================================
+The existing regression suite continues to cover the gameplay and control surface
+that predates 1.3, including:
 
-Test environment note: the sandbox browser blocks URL navigation,
-so the self-contained page was loaded directly into Chromium's
-in-memory document. Save serialization/restoration used a controlled
-Storage-compatible test fixture; storage-unavailable behavior used
-the browser's restricted storage environment. Touch testing was
-emulated, not performed on physical phone hardware.
+- Desktop keyboard movement and input cleanup.
+- Mobile analog thumbstick movement and drag-anywhere fallback.
+- True multitouch steering plus DASH / OVERDRIVE ability use.
+- Touch pause/resume while steering.
+- Touch-control AUTO / ON / OFF behavior.
+- Left-handed control layout.
+- Portrait and landscape layouts across tested viewport sizes.
+- Safe cleanup on rotation, visibility loss, blur, pointer cancellation, and
+  pointer-capture loss.
+- Ship selection, gameplay transitions, upgrade selection, and pause screens.
+- Desktop mouse/keyboard behavior alongside the mobile additions.
+- Device-pixel-ratio/rendering constraints used by the mobile build.
 
-This is not a claim of universal bug-free operation. Other browser
-engines, device hardware, and browser-management policies were not
-individually certified.
+The 1.3 release reran this suite after the career, community, daily, checkpoint,
+modifier, boss, and backend integration changes. It passed 147 / 147 assertions.
+
+NEON RIFT 1.3 MANAGED-PLAY REGRESSION - 40 ASSERTIONS
+=====================================================
+The new 1.3 suite validates the generated production HTML while mocking the
+Supabase network boundary so client behavior is deterministic. Coverage includes:
+
+- Application version 1.3.0 and modern Supabase publishable-key configuration.
+- No legacy anonymous JWT configured in the active client block.
+- No service-role or Supabase secret key in browser code.
+- Managed `game-session` Edge Function configuration.
+- Explicit absence of a seasonal progression model.
+- Daily Signal button and checkpoint UI behavior.
+- Pilot career screen hiding the in-run HUD correctly.
+- Anonymous browser player signal display.
+- Four cosmetic career signal themes.
+- Escape-key career navigation.
+- Managed daily-session creation.
+- UTC daily challenge date and deterministic mode state.
+- Active sector modifier and run-mode HUD.
+- Sector completion reaching the upgrade screen.
+- Sector-boundary checkpoint creation.
+- Sector-clear telemetry.
+- Checkpoint survival across page reload.
+- Resume at the correct secured sector.
+- Restoration of deterministic upgrade choices and RNG progression.
+- Run-resume telemetry.
+- Upgrade application advancing to the next sector.
+- Boss appearance and distinct THE GATEKEEPER identity.
+- Managed finish submission using the server-issued run session.
+- Checkpoint deletion when the run finishes.
+- Permanent standard all-time leaderboard query filtering.
+- UTC daily leaderboard query filtering and row rendering.
+- Daily victory suppressing endless continuation.
+- Keyboard R opening a fresh verified daily session, matching the Retry button.
+- Standard ENTER THE RIFT opening a standard managed session.
+- Standard mode remaining the permanent all-time leaderboard mode.
+- Pause -> quit recording anonymous run-abandon telemetry.
+- No uncaught JavaScript errors during the exercised flow.
+
+STARTUP / INITIALIZATION REGRESSION
+===================================
+A separate startup smoke test forces the QA hook on in an actual browser and
+fails on any uncaught page exception. This test exposed and fixed an initialization
+ordering defect inherited from the earlier career build: the old generated page
+could call career-home synchronization before the career object finished
+initializing. Neon Rift 1.3 defers that synchronization until initialization is
+complete. The final startup smoke passes.
+
+BUILD AND SAVE-COMPATIBILITY GATES
+==================================
+The release workflow rebuilds from an approved baseline rather than editing an
+unknown generated file. It then verifies:
+
+- index.html and neon-rift.html are byte-identical.
+- All inline JavaScript parses successfully.
+- The original `neon-rift-save-v1` key remains present.
+- The career `neon-rift-career-v1` key remains present.
+- 1.3 player identity uses `neon-rift-player-v1`.
+- 1.3 checkpoint resume uses `neon-rift-checkpoint-v1`.
+- Music remains enabled by default for new players.
+- Existing localStorage save paths remain intact.
+- The browser uses only the public `sb_publishable_...` key.
+- No `sb_secret_...` or service-role credential is shipped to the browser.
+
+BACKEND SECURITY VALIDATION
+===========================
+The Supabase 1.3 migration and Edge Function were separately validated against the
+production project:
+
+- RLS is enabled on player/session/telemetry/rate-limit tables.
+- Anonymous/authenticated roles have no access to those backend-only tables.
+- Anonymous access to `runs` is SELECT only.
+- Direct anonymous leaderboard INSERT/UPDATE/DELETE is revoked.
+- Run writes go through the `game-session` Edge Function.
+- The function validates the public application key, session token hash, active
+  session, run-shape constraints, elapsed time sanity, duplicate run IDs, broad
+  score bounds, and request rate limits.
+- Daily runs are restricted to the nine-sector daily objective.
+- The deployed Edge Function is version 2 and stores only a coarse platform label,
+  not the raw browser user-agent string.
+- Supabase Security Advisor reports zero findings after the 1.3 migrations.
+
+LIMITATIONS
+===========
+This is strong automated release validation, not a claim of universal bug-free
+operation. The final release has not been manually certified on physical iPhone
+or Android hardware, Safari/WebKit, every browser-management policy, or every
+possible accessibility configuration.
+
+The leaderboard is hardened against casual direct-database score fabrication but
+the game remains client-authoritative. It is not a fully server-simulated or
+cryptographically provable competitive environment.
