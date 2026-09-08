@@ -13,10 +13,14 @@ python3 - <<'PY'
 from pathlib import Path
 import base64,hashlib
 parts=[Path(f'.ci-transfer/v17-js.{i:02}.b64') for i in range(1,6)]
-assert all(p.exists() for p in parts), 'Missing staged 1.7 source chunk'
-data=base64.b64decode(''.join(p.read_text().strip() for p in parts),validate=True)
+old_blob='c7eebf84957463b0f4087fe147a1b5d630d16695'
+patched_blob='e25f7ec1e47b837485fe5392e3431f1efad01292'
+if all(p.exists() for p in parts):
+    data=base64.b64decode(''.join(p.read_text().strip() for p in parts),validate=True)
+else:
+    data=Path('tools/visual-v17/v17.js').read_bytes()
 blob=hashlib.sha1((f'blob {len(data)}\0').encode()+data).hexdigest()
-assert blob=='c7eebf84957463b0f4087fe147a1b5d630d16695',blob
+assert blob in {old_blob,patched_blob},blob
 s=data.decode()
 old="""NR15.Engine.prototype.resize=function(w,h,mobile){
  const q=this.quality,showcase=!!this.nr17Showcase&&!mobile&&q!=='compatibility';
@@ -29,12 +33,15 @@ new="""NR15.Engine.prototype.resize=function(w,h,mobile){
  if(showcase)this.quality='ultra';
  try{return nr17ResizeBase.call(this,w,h,mobileLike);}finally{this.quality=q;}
 };"""
-assert s.count(old)==1,'Unexpected 1.7 resize source'
-s=s.replace(old,new,1)
-patched=s.encode();patched_blob=hashlib.sha1((f'blob {len(patched)}\0').encode()+patched).hexdigest()
-assert patched_blob=='e25f7ec1e47b837485fe5392e3431f1efad01292',patched_blob
+if blob==old_blob:
+    assert s.count(old)==1,'Unexpected 1.7 resize source'
+    s=s.replace(old,new,1)
+else:
+    assert s.count(new)==1,'Unexpected already-patched 1.7 resize source'
+patched=s.encode();check=hashlib.sha1((f'blob {len(patched)}\0').encode()+patched).hexdigest()
+assert check==patched_blob,check
 Path('tools/visual-v17/v17.js').write_bytes(patched)
-print('Reviewed 1.7 source:',len(data),'bytes;',blob,'-> mobile-budget patch',len(patched),'bytes;',patched_blob)
+print('Reviewed 1.7 source:',len(data),'bytes;',blob,'-> mobile-budget source',len(patched),'bytes;',check)
 PY
 python3 tools/visual-v17/build.py
 cp index.html /tmp/neon-rift-1.7-production.html
@@ -84,21 +91,12 @@ xvfb-run -a python3 tests/.v17_v15_regression.py
 cp /tmp/neon-rift-1.7-production.html index.html
 xvfb-run -a python3 tests/v16_regression.py --suite all
 cp /tmp/neon-rift-1.7-production.html index.html
-python3 - <<'PY'
-from pathlib import Path
-p=Path('tests/v17_regression.py');s=p.read_text()
-old="pg.evaluate(f'__NR17_QA.setTravelProgress({f})');pg.wait_for_timeout(90);actual=pg.locator('#travelPhase').inner_text();check(f'{name}: correct cinematic phase',actual==phase,actual)"
-new="pg.evaluate(f'__NR17_QA.setTravelProgress({f})');actual=pg.locator('#travelPhase').inner_text();check(f'{name}: correct cinematic phase',actual==phase,actual);pg.wait_for_timeout(90)"
-assert s.count(old)==1,'Unexpected v17 phase-UAT source'
-p.write_text(s.replace(old,new,1))
-print('Removed wall-clock delay from deterministic phase assertion for CI execution.')
-PY
 xvfb-run -a python3 tests/v17_regression.py
 cp /tmp/neon-rift-1.7-production.html index.html
 cp index.html neon-rift.html
 cmp index.html neon-rift.html
 git config user.name 'github-actions[bot]';git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
 git add -- index.html neon-rift.html tools/visual-v17/v17.js
-git rm -- .ci-transfer/v17-js.01.b64 .ci-transfer/v17-js.02.b64 .ci-transfer/v17-js.03.b64 .ci-transfer/v17-js.04.b64 .ci-transfer/v17-js.05.b64
+git rm --ignore-unmatch -- .ci-transfer/v17-js.01.b64 .ci-transfer/v17-js.02.b64 .ci-transfer/v17-js.03.b64 .ci-transfer/v17-js.04.b64 .ci-transfer/v17-js.05.b64
 git diff --cached --quiet || git commit -m 'Assemble tested Neon Rift 1.7 cinematic release [skip ci]'
 git push origin HEAD:v17-cinematic-travel-20260908

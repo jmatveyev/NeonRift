@@ -47,7 +47,7 @@ try:
   c,pg,errors=make(b,1280,720);pg.evaluate("__NR16_QA.setSeed(17);__NR17_QA.startTravel('PHASE LATTICE')")
   frames=[];expected=[('launch',.10,'CLEARING DOCK'),('warp',.50,'RIFT TRANSIT'),('arrival',.90,'FINAL APPROACH')]
   for name,f,phase in expected:
-   pg.evaluate(f'__NR17_QA.setTravelProgress({f})');pg.wait_for_timeout(90);actual=pg.locator('#travelPhase').inner_text();check(f'{name}: correct cinematic phase',actual==phase,actual)
+   pg.evaluate(f'__NR17_QA.setTravelProgress({f})');actual=pg.locator('#travelPhase').inner_text();check(f'{name}: correct cinematic phase',actual==phase,actual);pg.wait_for_timeout(90)
    check(f'{name}: normal top bar is suppressed',pg.locator('.topbar').evaluate("e=>getComputedStyle(e).opacity")=='0')
    r=pg.locator('.travel-card').evaluate('e=>e.getBoundingClientRect().toJSON()');check(f'{name}: flight-computer HUD stays inside desktop viewport',rect_inside(r,1280,720),r)
    st=pg.evaluate('__NR15_QA.status');check(f'{name}: animated travel renders real 3D geometry',st['mode']=='webgl2' and st['triangles']>2000,st)
