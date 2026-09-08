@@ -30,7 +30,7 @@ jobs:
         run: bash tools/visual-v17/ci.sh
       - name: Preserve candidate and UAT evidence
         if: ${{ always() }}
-        uses: actions/upload-artifact@ea165f8d65b6e75b54449e92b4886f43607fa02
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: neon-rift-1.7-candidate-and-uat
           path: artifacts
