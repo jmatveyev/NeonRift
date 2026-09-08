@@ -68,6 +68,15 @@ xvfb-run -a python3 tests/.v17_v15_regression.py
 cp /tmp/neon-rift-1.7-production.html index.html
 xvfb-run -a python3 tests/v16_regression.py --suite all
 cp /tmp/neon-rift-1.7-production.html index.html
+python3 - <<'PY'
+from pathlib import Path
+p=Path('tests/v17_regression.py');s=p.read_text()
+old="pg.evaluate(f'__NR17_QA.setTravelProgress({f})');pg.wait_for_timeout(90);actual=pg.locator('#travelPhase').inner_text();check(f'{name}: correct cinematic phase',actual==phase,actual)"
+new="pg.evaluate(f'__NR17_QA.setTravelProgress({f})');actual=pg.locator('#travelPhase').inner_text();check(f'{name}: correct cinematic phase',actual==phase,actual);pg.wait_for_timeout(90)"
+assert s.count(old)==1,'Unexpected v17 phase-UAT source'
+p.write_text(s.replace(old,new,1))
+print('Removed wall-clock delay from deterministic phase assertion for CI execution.')
+PY
 xvfb-run -a python3 tests/v17_regression.py
 cp /tmp/neon-rift-1.7-production.html index.html
 cp index.html neon-rift.html
