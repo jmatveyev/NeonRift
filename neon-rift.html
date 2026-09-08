@@ -127,7 +127,7 @@ const angleLerp = (a, b, t) => a + Math.atan2(Math.sin(b - a), Math.cos(b - a)) 
 const touchMedia = matchMedia('(any-pointer:coarse)');
 let touchDetected = touchMedia.matches || navigator.maxTouchPoints > 0;
 let coarse = touchDetected;
-const defaults = { best: 0, runs: 0, wins: 0, sector: 0, sound: true, music: false, motion: matchMedia('(prefers-reduced-motion:reduce)').matches, rig: 'striker', controls: 'auto', leftHanded: false };
+const defaults = { best: 0, runs: 0, wins: 0, sector: 0, sound: true, music: true, motion: matchMedia('(prefers-reduced-motion:reduce)').matches, rig: 'striker', controls: 'auto', leftHanded: false };
 let save = { ...defaults };
 let storageAvailable = true;
 try {

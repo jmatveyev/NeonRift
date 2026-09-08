@@ -10,6 +10,7 @@ def rep(old,new):
  s=s.replace(old,new)
 rep('<title>NEON RIFT - Arcade Survival</title>','<title>NEON RIFT - Arcade Survival</title>\n<meta name="application-version" content="1.1.0-mobile">')
 rep('</style>',(root/'mobile.css').read_text()+'\n</style>')
+rep('music: false','music: true')
 # Runtime detection also covers tablets with an attached mouse.
 s = '\n'.join(line for line in s.split('\n') if not line.startswith('@media(pointer:coarse)'))
 rep('<div class="touch-hint" id="touchHint">DRAG ANYWHERE<br>TO STEER YOUR SHIP</div>', '<div id="movePad" hidden role="group" aria-label="Movement thumbstick. Drag in the direction you want to move."><div id="moveKnob"></div><span id="moveCaption">MOVE</span></div>\n <div class="touch-hint" id="touchHint">THUMBSTICK TO MOVE<br>WEAPONS FIRE AUTOMATICALLY</div>')
@@ -108,11 +109,11 @@ rep('save: { ...save }, storageAvailable', 'save: { ...save }, storageAvailable,
 def blob(data):
  return hashlib.sha1(('blob '+str(len(data))+'\0').encode()+data).hexdigest()
 output=s.encode()
-expected='d5e36dcb8c095b43339ac6a58c27d6706584c196'
+expected='0cc4b8a9564e26faef1314ff216fb8dcb16d732b'
 assert blob(output)==expected, 'Generated game differs from the tested release.'
 for name in ['index.html','neon-rift.html']:
  path=site/name
- if path.exists() and blob(path.read_bytes()) not in ['26f50199b84cc6ed8123c70d596e623ebe7d054f',expected]:
+ if path.exists() and blob(path.read_bytes()) not in ['26f50199b84cc6ed8123c70d596e623ebe7d054f','d5e36dcb8c095b43339ac6a58c27d6706584c196',expected]:
   raise RuntimeError('Refusing to overwrite unexpected changes to '+name)
 for name in ['index.html','neon-rift.html']:
  (site/name).write_bytes(output)
