@@ -120,16 +120,41 @@ try:
         page.wait_for_function("__NEON_RIFT_TEST__.snapshot().state === 'playing'")
         check('Managed Standard start identifies 1.4.0', starts and starts[-1].get('game_version') == '1.4.0', starts[-1] if starts else None)
         check('Sector 1 uses Signal Frontier art direction', page.evaluate("v14Palette().name") == 'SIGNAL FRONTIER')
-        check('Sector 1 canvas has substantial visual variation', page.evaluate("""
+        sector1_metrics = page.evaluate("""
           () => {
-            render(); const source=document.querySelector('#game'), sample=document.createElement('canvas'); sample.width=40; sample.height=24;
-            const c=sample.getContext('2d'); c.drawImage(source,0,0,40,24); const d=c.getImageData(0,0,40,24).data; const u=new Set();
-            for(let i=0;i<d.length;i+=4) u.add(`${d[i]>>4},${d[i+1]>>4},${d[i+2]>>4}`); return u.size;
+            render();
+            const source=document.querySelector('#game'), sample=document.createElement('canvas'); sample.width=48; sample.height=30;
+            const c=sample.getContext('2d'); c.drawImage(source,0,0,48,30); const d=c.getImageData(0,0,48,30).data;
+            const unique=new Set(); let lit=0, signature=2166136261;
+            for(let i=0;i<d.length;i+=4){
+              unique.add(`${d[i]>>4},${d[i+1]>>4},${d[i+2]>>4}`);
+              if(d[i]+d[i+1]+d[i+2]>36) lit++;
+              signature ^= d[i]; signature=Math.imul(signature,16777619);
+              signature ^= d[i+1]; signature=Math.imul(signature,16777619);
+              signature ^= d[i+2]; signature=Math.imul(signature,16777619);
+            }
+            return {unique:unique.size,lit,signature:signature>>>0};
           }
-        """) > 22)
+        """)
+        check('Sector 1 gameplay frame is visibly non-flat', sector1_metrics['unique'] >= 8 and sector1_metrics['lit'] >= 120, sector1_metrics)
 
         page.evaluate('__NEON_RIFT_TEST__.forceWave(5)')
         check('Midgame switches to Ion Wreckage art direction', page.evaluate("v14Palette().name") == 'ION WRECKAGE')
+        ion_metrics = page.evaluate("""
+          () => {
+            render();
+            const source=document.querySelector('#game'), sample=document.createElement('canvas'); sample.width=48; sample.height=30;
+            const c=sample.getContext('2d'); c.drawImage(source,0,0,48,30); const d=c.getImageData(0,0,48,30).data;
+            let signature=2166136261;
+            for(let i=0;i<d.length;i+=4){
+              signature ^= d[i]; signature=Math.imul(signature,16777619);
+              signature ^= d[i+1]; signature=Math.imul(signature,16777619);
+              signature ^= d[i+2]; signature=Math.imul(signature,16777619);
+            }
+            return signature>>>0;
+          }
+        """)
+        check('Biome switch materially changes rendered gameplay frame', ion_metrics != sector1_metrics['signature'], {'sector1': sector1_metrics['signature'], 'ion': ion_metrics})
         page.evaluate('__NEON_RIFT_TEST__.forceWave(8)')
         check('Late game switches to Fractured Veil art direction', page.evaluate("v14Palette().name") == 'FRACTURED VEIL')
         page.evaluate('__NEON_RIFT_TEST__.forceWave(9)')
