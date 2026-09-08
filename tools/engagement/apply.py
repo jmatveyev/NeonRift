@@ -152,7 +152,7 @@ text = once(text,
     "save: { ...save }, storageAvailable, career: careerSnapshot(), mode: G?.mode || 'standard', challengeDate: G?.challengeDate || null, modifier: G?.modifier?.id || null,")
 text = once(text,
     "syncSettings(); syncHome(); showScreen('homeScreen');",
-    "syncSettings(); syncHome(); syncCareerHome(); showScreen('homeScreen');")
+    "syncSettings(); syncHome(); showScreen('homeScreen'); queueMicrotask(() => syncCareerHome());")
 
 output = text.encode()
 for name in ['index.html', 'neon-rift.html']:
