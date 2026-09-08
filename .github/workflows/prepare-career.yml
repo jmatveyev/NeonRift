@@ -99,7 +99,14 @@ jobs:
           old="window.NEON_RIFT_ONLINE = {\n  enabled: true,"
           new="window.NEON_RIFT_ONLINE = {\n  enabled: false,"
           assert s.count(old)==1
-          p.write_text(s.replace(old,new,1))
+          s=s.replace(old,new,1)
+          # Legacy control tests predate mandatory callsign onboarding. Seed a QA
+          # callsign only into this disposable test copy so Start still exercises
+          # the same gameplay/control path without weakening production onboarding.
+          old_pilot="version: 1, pilot: 'PILOT', xp: 0"
+          assert s.count(old_pilot)==1
+          s=s.replace(old_pilot,"version: 1, pilot: 'QA PILOT', xp: 0",1)
+          p.write_text(s)
           PY
           python3 tests/startup_smoke.py
           python3 tests/mobile_controls.py
