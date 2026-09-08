@@ -1,7 +1,7 @@
-name: Prepare Neon Rift 1.3.1 release
+name: Prepare Neon Rift 1.4 visual release
 on:
   push:
-    branches: [v131-audio-onboarding-20260907]
+    branches: [v14-visual-overhaul-20260907]
     paths:
       - 'tools/mobile/**'
       - 'tools/engagement/**'
@@ -11,7 +11,7 @@ on:
 permissions:
   contents: write
 concurrency:
-  group: prepare-neon-rift-v131
+  group: prepare-neon-rift-v14
   cancel-in-progress: true
 jobs:
   assemble-and-test:
@@ -21,7 +21,7 @@ jobs:
       - name: Check out working branch
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
         with:
-          ref: v131-audio-onboarding-20260907
+          ref: v14-visual-overhaul-20260907
 
       - name: Guard and rebuild mobile baseline
         run: |
@@ -29,7 +29,7 @@ jobs:
           from pathlib import Path
           import hashlib
           def blob(data): return hashlib.sha1((f'blob {len(data)}\0').encode()+data).hexdigest()
-          approved='537f05bbf568e3b09a73dedd23b2eb8a706b62d2'
+          approved='0ad01623b95938793b73c9c18657dbbf442398d7'
           for name in ['index.html','neon-rift.html']:
               p=Path(name)
               if not p.exists() or blob(p.read_bytes()) != approved:
@@ -38,8 +38,10 @@ jobs:
           PY
           python3 tools/mobile/build.py
 
-      - name: Assemble career, managed play and 1.3.1 patch
-        run: python3 tools/engagement/apply.py
+      - name: Assemble 1.3.1 gameplay foundation and 1.4 visual layer
+        run: |
+          python3 tools/engagement/apply.py
+          python3 tools/engagement/apply_v14.py
 
       - name: Validate launch files and JavaScript
         run: |
@@ -51,10 +53,10 @@ jobs:
           const scripts=[...a.matchAll(/<script>([\s\S]*?)<\/script>/g)];
           if(!scripts.length) throw new Error('No inline scripts found');
           for(const s of scripts) new Function(s[1]);
-          const tokens=['careerScreen','careerPilotInput','dailyRunBtn','resumeRunBtn','runModeHud','dailyLeaderboard','careerTheme','endlessRunBtn','pilotPrompt','endlessLeaderboard','createDynamicsCompressor','V131_VERSION'];
+          const tokens=['careerScreen','dailyRunBtn','endlessRunBtn','pilotPrompt','createDynamicsCompressor','V14_VERSION','v14DrawBackground','v14DrawFloor','drawPlayerV14','drawEnemyV14','drawBossV14','drawProjectilesV14','drawEffectsV14','v14PostFX','v14BossSting','canvas2d-premium'];
           for(const token of tokens) if(!a.includes(token)) throw new Error(`Missing ${token}`);
           for(const token of ['recordCompletedRun(won, cause)','G.damageTaken','G.dashes++','G.overdrives++','NEON_RIFT_ONLINE','game-session','startManagedRun','saveCheckpoint','sectorModifier','bossDisplayName']) if(!a.includes(token)) throw new Error(`Missing ${token}`);
-          console.log('Syntax, paired files, callsign onboarding, audio mix and three managed modes verified.');
+          console.log('Syntax, paired files, managed play and Neon Rift 1.4 visual runtime verified.');
           JS
 
       - name: Verify save compatibility and client security
@@ -67,7 +69,8 @@ jobs:
           assert "const PLAYER_KEY = 'neon-rift-player-v1'" in s
           assert "const CHECKPOINT_KEY = 'neon-rift-checkpoint-v1'" in s
           assert "const PILOT_CONFIRM_KEY = 'neon-rift-pilot-confirmed-v1'" in s
-          assert 'application-version" content="1.3.1"' in s
+          assert 'application-version" content="1.4.0"' in s
+          assert "const V131_VERSION = '1.4.0';" in s
           assert "music: true" in s
           assert "localStorage.setItem(SAVE_KEY" in s
           assert "localStorage.setItem(CAREER_KEY" in s
@@ -77,7 +80,7 @@ jobs:
           assert 'anonKey:' not in config
           assert 'sb_secret_' not in s
           assert "'service_role'" not in s and '"service_role"' not in s
-          print('Original saves preserved; no server credential is exposed in the 1.3.1 client.')
+          print('Original saves preserved; no server credential is exposed in the 1.4 client.')
           PY
 
       - name: Install Chromium regression runtime
@@ -92,7 +95,7 @@ jobs:
 
       - name: Run full mobile and desktop regression suite
         run: |
-          cp index.html /tmp/neon-rift-1.3.1-production.html
+          cp index.html /tmp/neon-rift-1.4-production.html
           python3 - <<'PY'
           from pathlib import Path
           p=Path('index.html'); s=p.read_text()
@@ -100,9 +103,6 @@ jobs:
           new="window.NEON_RIFT_ONLINE = {\n  enabled: false,"
           assert s.count(old)==1
           s=s.replace(old,new,1)
-          # Legacy control tests predate mandatory callsign onboarding. Seed a QA
-          # callsign only into this disposable test copy so Start still exercises
-          # the same gameplay/control path without weakening production onboarding.
           old_pilot="version: 1, pilot: 'PILOT', xp: 0"
           assert s.count(old_pilot)==1
           s=s.replace(old_pilot,"version: 1, pilot: 'QA PILOT', xp: 0",1)
@@ -110,13 +110,24 @@ jobs:
           PY
           python3 tests/startup_smoke.py
           python3 tests/mobile_controls.py
-          cp /tmp/neon-rift-1.3.1-production.html index.html
+          cp /tmp/neon-rift-1.4-production.html index.html
 
-      - name: Run managed-play regression suite
-        run: python3 tests/v13_regression.py
+      - name: Run inherited managed-play regression suites
+        run: |
+          cp index.html /tmp/neon-rift-1.4-production.html
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('index.html'); s=p.read_text()
+          s=s.replace('application-version" content="1.4.0"','application-version" content="1.3.1"',1)
+          s=s.replace("const V131_VERSION = '1.4.0';","const V131_VERSION = '1.3.1';",1)
+          p.write_text(s)
+          PY
+          python3 tests/v13_regression.py
+          python3 tests/v131_regression.py
+          cp /tmp/neon-rift-1.4-production.html index.html
 
-      - name: Run 1.3.1 audio, onboarding and Endless regression suite
-        run: python3 tests/v131_regression.py
+      - name: Run 1.4 visual regression suite
+        run: python3 tests/v14_regression.py
 
       - name: Commit assembled release
         run: |
@@ -124,5 +135,5 @@ jobs:
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -- index.html neon-rift.html
           if git diff --cached --quiet; then exit 0; fi
-          git commit -m 'Assemble Neon Rift 1.3.1 release'
-          git push origin HEAD:v131-audio-onboarding-20260907
+          git commit -m 'Assemble Neon Rift 1.4 visual release'
+          git push origin HEAD:v14-visual-overhaul-20260907
