@@ -1,25 +1,25 @@
-NEON RIFT 1.3 - RELEASE VALIDATION
-==================================
+NEON RIFT 1.3.1 - RELEASE VALIDATION
+====================================
 
-The Neon Rift 1.3 release is assembled and validated in GitHub Actions using
-headless Chromium with real keyboard events, Chromium emulated touchscreen input,
-network interception for managed Supabase client tests, and strict source/build
-guards.
+Neon Rift 1.3.1 is assembled and validated in GitHub Actions using headless
+Chromium with real keyboard events, Chromium emulated touchscreen input, mocked
+Supabase network boundaries, and strict source/build guards.
 
 FINAL AUTOMATED RESULT
 ======================
 Startup smoke: PASS
 Legacy mobile/desktop regression suite: 147 / 147 assertions PASS
-Neon Rift 1.3 managed-play regression suite: 40 / 40 assertions PASS
+Managed-play regression suite: 40 / 40 assertions PASS
+Neon Rift 1.3.1 audio/onboarding/Endless suite: 34 / 34 assertions PASS
 
-That is 187 explicit browser assertions plus the separate startup smoke gate.
+That is 221 explicit browser assertions plus the separate startup smoke gate.
 The production launch files also pass JavaScript syntax, save-compatibility,
 client-credential, and byte-identity validation before the release is committed.
 
 LEGACY MOBILE / DESKTOP REGRESSION - 147 ASSERTIONS
 ===================================================
 The existing regression suite continues to cover the gameplay and control surface
-that predates 1.3, including:
+that predates 1.3.1, including:
 
 - Desktop keyboard movement and input cleanup.
 - Mobile analog thumbstick movement and drag-anywhere fallback.
@@ -34,55 +34,79 @@ that predates 1.3, including:
 - Desktop mouse/keyboard behavior alongside the mobile additions.
 - Device-pixel-ratio/rendering constraints used by the mobile build.
 
-The 1.3 release reran this suite after the career, community, daily, checkpoint,
-modifier, boss, and backend integration changes. It passed 147 / 147 assertions.
+Because callsign onboarding is intentionally new behavior, the disposable legacy
+regression copy is seeded with a QA callsign so the old Start-button tests still
+exercise the original gameplay/control path. Production onboarding is not
+bypassed. The final legacy suite passes 147 / 147 assertions.
 
-NEON RIFT 1.3 MANAGED-PLAY REGRESSION - 40 ASSERTIONS
-=====================================================
-The new 1.3 suite validates the generated production HTML while mocking the
-Supabase network boundary so client behavior is deterministic. Coverage includes:
+MANAGED-PLAY REGRESSION - 40 ASSERTIONS
+=======================================
+The managed-play suite validates the generated 1.3.1 production HTML while
+mocking the Supabase network boundary so client behavior is deterministic.
+Coverage includes:
 
-- Application version 1.3.0 and modern Supabase publishable-key configuration.
+- Application version 1.3.1 and modern Supabase publishable-key configuration.
 - No legacy anonymous JWT configured in the active client block.
 - No service-role or Supabase secret key in browser code.
 - Managed `game-session` Edge Function configuration.
 - Explicit absence of a seasonal progression model.
-- Daily Signal button and checkpoint UI behavior.
-- Pilot career screen hiding the in-run HUD correctly.
-- Anonymous browser player signal display.
-- Four cosmetic career signal themes.
-- Escape-key career navigation.
-- Managed daily-session creation.
-- UTC daily challenge date and deterministic mode state.
-- Active sector modifier and run-mode HUD.
-- Sector completion reaching the upgrade screen.
-- Sector-boundary checkpoint creation.
-- Sector-clear telemetry.
-- Checkpoint survival across page reload.
-- Resume at the correct secured sector.
-- Restoration of deterministic upgrade choices and RNG progression.
-- Run-resume telemetry.
-- Upgrade application advancing to the next sector.
-- Boss appearance and distinct THE GATEKEEPER identity.
-- Managed finish submission using the server-issued run session.
-- Checkpoint deletion when the run finishes.
-- Permanent standard all-time leaderboard query filtering.
-- UTC daily leaderboard query filtering and row rendering.
-- Daily victory suppressing endless continuation.
-- Keyboard R opening a fresh verified daily session, matching the Retry button.
-- Standard ENTER THE RIFT opening a standard managed session.
-- Standard mode remaining the permanent all-time leaderboard mode.
-- Pause -> quit recording anonymous run-abandon telemetry.
-- No uncaught JavaScript errors during the exercised flow.
+- Daily Signal and checkpoint behavior.
+- Pilot career HUD isolation and Escape-key navigation.
+- Anonymous browser player signal display and cosmetic themes.
+- Managed Daily and Standard session creation.
+- UTC Daily challenge state and deterministic modifiers.
+- Sector-boundary checkpoint creation, reload survival, and deterministic resume.
+- Sector-clear and resume telemetry.
+- Boss identity and managed finish submission.
+- Standard all-time and UTC Daily leaderboard filtering.
+- Daily victory suppressing Endless continuation.
+- Keyboard R matching Retry managed-session behavior.
+- Pause -> quit abandonment telemetry.
+- No uncaught JavaScript errors in the exercised managed-play path.
 
-STARTUP / INITIALIZATION REGRESSION
-===================================
-A separate startup smoke test forces the QA hook on in an actual browser and
-fails on any uncaught page exception. This test exposed and fixed an initialization
-ordering defect inherited from the earlier career build: the old generated page
-could call career-home synchronization before the career object finished
-initializing. Neon Rift 1.3 defers that synchronization until initialization is
-complete. The final startup smoke passes.
+NEON RIFT 1.3.1 REGRESSION - 34 ASSERTIONS
+==========================================
+The dedicated patch suite validates the issues addressed by 1.3.1:
+
+- Application version 1.3.1.
+- Mobile master mix raised from the old low-level path.
+- Dynamics-compressor stage present in the WebAudio output graph.
+- Very low mobile music notes shifted upward for small-speaker audibility.
+- First-run callsign prompt present.
+- Blank callsigns rejected before managed run creation.
+- Callsign normalization and persistence.
+- Existing local `PILOT` history adopting the first real callsign.
+- Callsign confirmation preventing repeat prompts on later runs.
+- STANDARD RUN visible on the home screen.
+- ENDLESS RUN visible on the home screen.
+- DAILY SIGNAL remaining visible on the home screen.
+- Ranked Endless creating a managed `endless` session from sector 1.
+- Endless mode reflected in the QA snapshot and HUD.
+- Ranked Endless continuing beyond sector 9 instead of entering the Standard win
+  state.
+- Endless completion submitting as a survival/loss result rather than a victory.
+- 1.3.1 version tagging on managed submissions.
+- Separate Endless leaderboard query and rendering.
+- Standard victory prominently exposing CONTINUE INTO ENDLESS.
+- Post-win same-build continuation clearly labeled UNRANKED.
+- Post-win Endless receiving initial result-screen focus.
+- Post-win continuation switching the HUD to Endless.
+- Post-win continuation not creating a duplicate ranked submission.
+- Explicit absence of season/season-pass behavior.
+- No uncaught JavaScript errors during these flows.
+
+AUDIO VALIDATION BOUNDARY
+=========================
+The automated suite verifies the WebAudio graph and the intended gain/compression
+configuration, but a headless browser cannot measure sound pressure level from a
+physical phone speaker. The old root cause was deterministic in code: a 0.32
+master gain was followed by very small synthesized music levels, including notes
+around 49-65 Hz that phone speakers reproduce poorly.
+
+1.3.1 raises the coarse-pointer/mobile master target to 0.78, applies modest
+per-tone mobile boosts, shifts musical notes below 75 Hz up one octave on mobile,
+and uses a DynamicsCompressor to control summed peaks. Final perceived loudness
+must still be checked on actual phone hardware at a normal system-volume setting.
 
 BUILD AND SAVE-COMPATIBILITY GATES
 ==================================
@@ -93,37 +117,54 @@ unknown generated file. It then verifies:
 - All inline JavaScript parses successfully.
 - The original `neon-rift-save-v1` key remains present.
 - The career `neon-rift-career-v1` key remains present.
-- 1.3 player identity uses `neon-rift-player-v1`.
-- 1.3 checkpoint resume uses `neon-rift-checkpoint-v1`.
+- Anonymous player identity uses `neon-rift-player-v1`.
+- Checkpoint resume uses `neon-rift-checkpoint-v1`.
+- Callsign onboarding uses `neon-rift-pilot-confirmed-v1`.
 - Music remains enabled by default for new players.
 - Existing localStorage save paths remain intact.
 - The browser uses only the public `sb_publishable_...` key.
 - No `sb_secret_...` or service-role credential is shipped to the browser.
 
-BACKEND SECURITY VALIDATION
-===========================
-The Supabase 1.3 migration and Edge Function were separately validated against the
-production project:
+BACKEND SECURITY AND MODE VALIDATION
+====================================
+The Supabase production project was validated after adding first-class Endless
+mode:
 
-- RLS is enabled on player/session/telemetry/rate-limit tables.
+- RLS remains enabled on backend-only player/session/telemetry/rate-limit tables.
 - Anonymous/authenticated roles have no access to those backend-only tables.
-- Anonymous access to `runs` is SELECT only.
-- Direct anonymous leaderboard INSERT/UPDATE/DELETE is revoked.
+- Anonymous access to `runs` remains SELECT only.
+- Direct anonymous leaderboard INSERT/UPDATE/DELETE remains revoked.
 - Run writes go through the `game-session` Edge Function.
+- The deployed Edge Function is version 3.
+- The function accepts exactly Standard, Endless, and Daily run modes.
+- Standard and Daily submissions are limited to the nine-sector objective.
+- Endless submissions may progress beyond sector 9 and cannot claim a victory
+  state.
+- A separate Endless score index and leaderboard filter are present.
+- When a browser supplies its first real callsign, prior community rows for the
+  same anonymous player identity still named PILOT can be relabeled server-side.
 - The function validates the public application key, session token hash, active
   session, run-shape constraints, elapsed time sanity, duplicate run IDs, broad
   score bounds, and request rate limits.
-- Daily runs are restricted to the nine-sector daily objective.
-- The deployed Edge Function is version 2 and stores only a coarse platform label,
-  not the raw browser user-agent string.
-- Supabase Security Advisor reports zero findings after the 1.3 migrations.
+- Only a coarse platform label is stored rather than a raw browser user-agent.
+- Supabase Security Advisor reports zero security findings after the Endless
+  migration.
+
+PRODUCTION DATA OBSERVATION BEFORE 1.3.1 DEPLOYMENT
+===================================================
+The backend contained one verified Standard victory from the live 1.3 build:
+404,238 score, 449 kills, 9 sectors, 265 seconds, Striker, 110 best combo. The
+run is associated with the anonymous browser identity and is currently named
+PILOT until that browser supplies a real callsign. There were no Endless rows
+before the new mode was deployed to the client.
 
 LIMITATIONS
 ===========
 This is strong automated release validation, not a claim of universal bug-free
-operation. The final release has not been manually certified on physical iPhone
-or Android hardware, Safari/WebKit, every browser-management policy, or every
-possible accessibility configuration.
+operation. Chromium emulates the phone input/runtime surface; it is not a
+substitute for listening to the game on a physical iPhone or Android speaker.
+Safari/WebKit and every browser-management/accessibility configuration are also
+not individually certified.
 
 The leaderboard is hardened against casual direct-database score fabrication but
 the game remains client-authoritative. It is not a fully server-simulated or
