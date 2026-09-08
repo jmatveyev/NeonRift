@@ -1,15 +1,17 @@
 NEON RIFT
 A self-contained arcade survival game with optional community services
-Version 1.3.0 - Progression & Reliability
+Version 1.3.1 - Audio & Game Modes
 
 GET STARTED
 ===========
 Play the deployed build at:
 https://jmatveyev.github.io/NeonRift/
 
-You can also open neon-rift.html directly in a modern browser. Choose a ship
-and select ENTER THE RIFT for a standard run, or DAILY SIGNAL for the UTC daily
-challenge.
+You can also open neon-rift.html directly in a modern browser. Choose a ship and
+select STANDARD RUN, ENDLESS RUN, or DAILY SIGNAL. The first time an unnamed
+pilot starts a run, Neon Rift asks for a callsign before gameplay begins. That
+callsign is the display name used on community leaderboards and can be changed
+later in Pilot Profile.
 
 The core game remains playable offline. Graphics, gameplay logic, synthesized
 sound effects, and music are contained in the HTML file. Community leaderboards,
@@ -34,8 +36,8 @@ R                        Start a verified retry from the results screen
 Aiming and firing are automatic. Your job is movement, positioning, dash timing,
 and choosing a powerful build.
 
-PHONE CONTROLS
-==============
+PHONE CONTROLS AND AUDIO
+========================
 The visible thumbstick moves your ship. DASH and OVERDRIVE are large buttons on
 the other side. Keep one finger steering while using an ability with another
 finger. Aiming and firing stay automatic. Dragging directly on the arena remains
@@ -51,10 +53,18 @@ layout that swaps the thumbstick and abilities. Those preferences are stored
 locally when browser storage is available. Touch input is cleared when you pause,
 leave the page, lose pointer capture, or cancel a touch.
 
+Neon Rift 1.3.1 substantially raises the mobile WebAudio output level. The phone
+mix now uses a higher master gain, modest per-tone boosts, and a dynamics
+compressor to control summed peaks instead of leaving the entire game at the old
+very-low master level. Very low musical bass notes are also shifted up an octave
+on mobile so small phone speakers can reproduce them more effectively. Desktop
+output receives a smaller increase.
+
 Phone rendering uses a capped pixel ratio to reduce graphics load. The layout
 accounts for screen cutouts and bottom gesture areas. Automated Chromium mobile
-coverage is extensive, but physical iPhone, Android, Safari, and WebKit hardware
-validation has not been completed. See MOBILE-TESTING.md and TESTING.txt.
+coverage is extensive. Physical phone loudness cannot be measured by headless
+browser tests, so the final acoustic check is the actual device speaker at a
+normal system-volume setting. See MOBILE-TESTING.md and TESTING.txt.
 
 GAME MODES
 ==========
@@ -64,17 +74,23 @@ scores compete on a permanent all-time community leaderboard. The board does not
 reset on a season schedule. Neon Rift intentionally has no seasonal progression,
 seasonal leaderboard, or season pass model.
 
+ENDLESS RUN
+Start directly from sector 1 and continue until defeat. Endless is a first-class
+home-screen gameplay type with its own permanent all-time community leaderboard.
+It does not have a victory state and may progress beyond sector 9. Endless runs
+are not mixed into the nine-sector Standard leaderboard and are not checkpointed.
+
+After a Standard victory, CONTINUE INTO ENDLESS is still offered prominently.
+That path keeps the completed Standard run's existing build and is labeled
+UNRANKED CONTINUATION. It does not create a second leaderboard submission. Use
+the home-screen ENDLESS RUN option for a ranked Endless attempt from sector 1.
+
 DAILY SIGNAL
 Everyone receives the same deterministic UTC daily seed. The daily challenge uses
 the same nine-sector objective and has its own leaderboard for that UTC date.
-Daily runs do not continue into endless mode. A new daily challenge appears when
-the UTC date changes; this does not reset career progress or the permanent
-standard leaderboard.
-
-ENDLESS
-After a standard nine-sector victory, continue with the same build in endless
-mode. Endless sectors can progress beyond sector 9. Endless continuation is not
-available from the daily challenge.
+Daily runs do not continue into Endless. A new Daily Signal appears when the UTC
+date changes; this does not reset career progress, Standard rankings, or Endless
+rankings.
 
 SECTORS AND BOSSES
 ==================
@@ -88,7 +104,7 @@ HUNTER GRID      Enemies move and arrive faster.
 LONG NIGHT       The survival phase lasts longer.
 REPAIR WINDOW    Sector clearance restores additional hull.
 
-Boss encounters now have distinct identities and additional telegraphed attacks:
+Boss encounters have distinct identities and additional telegraphed attacks:
 sector 3 THE GATEKEEPER, sector 6 VOID WARDEN, and sector 9 RIFT SOVEREIGN.
 Bosses become more dangerous below roughly half health.
 
@@ -109,14 +125,25 @@ each upgrade and its next rank.
 Options include extra projectiles, piercing shots, critical hits, chain
 lightning, explosive rounds, orbital drones, regenerating shields, repair swarms,
 stronger hulls, and enhanced dashes. Once normal upgrades are maxed, repeatable
-limit-break upgrades keep endless mode progressing.
+limit-break upgrades keep Endless mode progressing.
 
-CAREER AND COSMETICS
-====================
+CAREER, CALLSIGN, AND COSMETICS
+==============================
 Pilot career data is stored in this browser under a separate local save so the
 original personal-best/settings save remains compatible. Career tracks XP,
 levels, completed runs, wins, kills, flight time, best combo, wins by rig, recent
 run history, and eight achievements.
+
+An unnamed new profile begins internally as PILOT, but 1.3.1 asks for a callsign
+before the first Standard, Endless, or Daily run. A blank callsign cannot start a
+run. Callsigns are normalized to uppercase and limited to 16 characters using
+letters, numbers, spaces, underscores, and hyphens.
+
+When a browser that previously submitted runs as the default PILOT supplies its
+first real callsign, local PILOT history is relabeled. The managed backend also
+relables prior community rows still named PILOT for that same anonymous browser
+player identity the next time a named managed run starts. This lets an existing
+verified score keep its history without forcing the player to create an account.
 
 Career levels unlock cosmetic signal themes only. Cosmetics do not alter ship
 stats or leaderboard fairness:
@@ -126,21 +153,22 @@ Level 3   VOID VIOLET
 Level 5   RIFT GOLD
 Level 8   NOVA ROSE
 
-The pilot name is a display name, not an account. Each browser receives a random
+The callsign is a display name, not an account. Each browser receives a random
 anonymous player UUID used to associate verified community runs from that browser.
-Changing the pilot display name does not create a new local career. Different
-browsers or devices have independent local saves and anonymous identities.
+Changing the callsign does not create a new local career. Different browsers or
+devices have independent local saves and anonymous identities.
 
 CHECKPOINT RESUME
 =================
-For normal nine-sector standard and daily runs, Neon Rift saves a checkpoint at
+For nine-sector Standard and Daily runs, Neon Rift saves a checkpoint at
 cleared-sector upgrade screens. If the page is reloaded or closed, RESUME
 CHECKPOINT restores the run at that secured sector, including hull, energy,
 upgrades, score, run metrics, deterministic RNG position, and upgrade choices.
 
 Checkpoints expire after seven days. They are sector-boundary checkpoints, not
-continuous mid-sector saves. Endless mode is not checkpointed. Finishing or
-abandoning a run clears its checkpoint.
+continuous mid-sector saves. Ranked Endless and post-win Endless continuation are
+not checkpointed. Finishing or abandoning a checkpointed run clears its
+checkpoint.
 
 ENERGY, HULL, AND SCORE
 ======================
@@ -162,11 +190,18 @@ public publishable application key. It cannot insert directly into the run table
 Public database access is read-only; writes are accepted only through the
 `game-session` Edge Function.
 
+The backend understands three explicit run modes: standard, endless, and daily.
+Standard and Daily submissions are constrained to the nine-sector objective.
+Endless submissions may exceed sector 9 and never report a victory state. Each
+mode is queried separately so Endless scores cannot contaminate the Standard
+nine-sector rankings.
+
 For an online run, the server creates a run ID, a random session token, and the
 run seed. Only a hash of the session token is stored server-side. Completion
 submissions are checked against the active session, elapsed wall time, run shape,
-combo/kills consistency, sector limits, a broad score envelope, duplicate run
-IDs, and rate limits before a leaderboard row is written.
+combo/kills consistency, sector limits appropriate to the selected mode, a broad
+score envelope, duplicate run IDs, and rate limits before a leaderboard row is
+written.
 
 This is substantially harder to spoof than direct browser database writes, but
 Neon Rift is still a client-authoritative browser game. It is not an esports-grade
@@ -179,14 +214,16 @@ Local browser storage contains:
 - neon-rift-career-v1: career XP, achievements, statistics, and run history.
 - neon-rift-player-v1: anonymous browser player UUID.
 - neon-rift-checkpoint-v1: current sector-boundary checkpoint when applicable.
+- neon-rift-pilot-confirmed-v1: local marker that first-run callsign onboarding
+  has already been completed for the current profile.
 
 Browser privacy settings, clearing site data, private browsing, or using a
 different browser/profile can remove or isolate local data. The game remains
 playable when storage or community services are unavailable.
 
-Completed online run summaries can include pilot display name, score, kills,
-sectors, duration, ship, best combo, win state, run mode/date/seed, damage taken,
-dashes, Overdrive activations, game version, and a coarse platform label such as
+Completed online run summaries can include callsign, score, kills, sectors,
+duration, ship, best combo, win state, run mode/date/seed, damage taken, dashes,
+Overdrive activations, game version, and a coarse platform label such as
 `touch-portrait` or `desktop-landscape`.
 
 Anonymous balancing telemetry records limited run events such as run start/end,
@@ -209,8 +246,9 @@ byte-identical for a release. The build is assembled from reviewed source layers
     python3 tools/engagement/apply.py
 
 The builders use known-input guards and refuse to patch unrecognized launch
-files. Mobile regression coverage is in tests/mobile_controls.py. Neon Rift 1.3
-managed-run coverage is in tests/v13_regression.py, with startup diagnostics in
+files. Mobile regression coverage is in tests/mobile_controls.py. Managed-run
+coverage is in tests/v13_regression.py. Neon Rift 1.3.1 audio, callsign, and
+Endless-mode coverage is in tests/v131_regression.py, with startup diagnostics in
 tests/startup_smoke.py.
 
 The version-controlled Supabase schema migrations are under supabase/migrations/

@@ -10,7 +10,7 @@ const PILOT_RE = /^[A-Z0-9 _-]{1,16}$/;
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const PLATFORM_RE = /^(touch|desktop)-(portrait|landscape)$/;
 const RIGS = new Set(['striker', 'ghost', 'bastion']);
-const MODES = new Set(['standard', 'daily']);
+const MODES = new Set(['standard', 'endless', 'daily']);
 const EVENT_NAMES = new Set(['sector_clear', 'upgrade_choice', 'run_resume', 'run_abandon', 'client_error']);
 
 function allowedOrigin(req: Request) {
@@ -117,9 +117,13 @@ async function handleStart(req: Request, body: Record<string, unknown>) {
   const now = new Date().toISOString();
   const playerWrite = await admin.from('players').upsert({ player_id: playerId, pilot, last_seen_at: now }, { onConflict: 'player_id' });
   if (playerWrite.error) return response(req, 500, { error: 'player_write_failed' });
+  if (pilot !== 'PILOT') {
+    const rename = await admin.from('runs').update({ pilot }).eq('player_id', playerId).eq('pilot', 'PILOT');
+    if (rename.error) return response(req, 500, { error: 'pilot_history_rename_failed' });
+  }
   const sessionWrite = await admin.from('run_sessions').insert({ run_id: runId, player_id: playerId, token_hash: tokenHash, mode, challenge_date: challengeDate, seed, pilot, rig, client_hash: hash });
   if (sessionWrite.error) return response(req, 500, { error: 'session_write_failed' });
-  await admin.from('telemetry_events').insert({ run_id: runId, player_id: playerId, event_name: 'run_start', mode, challenge_date: challengeDate, wave: 0, rig, event_data: { game_version: String(body.game_version ?? '1.3.0').slice(0, 24), platform: cleanPlatform(body.platform) } });
+  await admin.from('telemetry_events').insert({ run_id: runId, player_id: playerId, event_name: 'run_start', mode, challenge_date: challengeDate, wave: 0, rig, event_data: { game_version: String(body.game_version ?? '1.3.1').slice(0, 24), platform: cleanPlatform(body.platform) } });
   return response(req, 200, { run_id: runId, token, seed, mode, challenge_date: challengeDate });
 }
 
@@ -144,7 +148,9 @@ async function handleFinish(req: Request, body: Record<string, unknown>) {
   if (seconds > wallSeconds + 20) return response(req, 422, { error: 'elapsed_time_invalid' });
   if (kills < maxCombo) return response(req, 422, { error: 'combo_exceeds_kills' });
   if (session.mode === 'daily' && sectors > 9) return response(req, 422, { error: 'daily_sector_limit' });
-  if (won && sectors < 9) return response(req, 422, { error: 'win_without_clear' });
+  if (session.mode === 'standard' && sectors > 9) return response(req, 422, { error: 'standard_sector_limit' });
+  if (session.mode === 'endless' && won) return response(req, 422, { error: 'endless_has_no_win_state' });
+  if (session.mode !== 'endless' && won && sectors < 9) return response(req, 422, { error: 'win_without_clear' });
   const scoreEnvelope = 75000 + kills * 25000 + sectors * 150000;
   if (score > scoreEnvelope) return response(req, 422, { error: 'score_outside_envelope' });
   const playedAt = new Date().toISOString();
@@ -153,7 +159,7 @@ async function handleFinish(req: Request, body: Record<string, unknown>) {
   const run = {
     run_id: runId, player_id: playerId, pilot: session.pilot, score, kills, sectors, seconds, rig: session.rig,
     max_combo: maxCombo, won, played_at: playedAt, mode: session.mode, challenge_date: session.challenge_date,
-    seed: session.seed, damage_taken: damageTaken, dashes, overdrives, game_version: String(body.game_version ?? '1.3.0').slice(0, 24), client_platform: platform
+    seed: session.seed, damage_taken: damageTaken, dashes, overdrives, game_version: String(body.game_version ?? '1.3.1').slice(0, 24), client_platform: platform
   };
   const runWrite = await admin.from('runs').insert(run);
   if (runWrite.error) return response(req, 409, { error: runWrite.error.code === '23505' ? 'duplicate_run' : 'run_write_failed' });
