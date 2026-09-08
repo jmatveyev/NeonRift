@@ -6,7 +6,6 @@ identity, leaderboard reads, cosmetic progression, and standard-mode fallback.
 """
 from pathlib import Path
 import json, os, socket, subprocess, sys, time, uuid
-from urllib.parse import urlparse
 from playwright.sync_api import sync_playwright
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -34,11 +33,12 @@ def wait_port(port, seconds=5):
 
 
 html = (ROOT / 'index.html').read_text()
+config = html.split('window.NEON_RIFT_ONLINE = {', 1)[1].split('};', 1)[0]
 check('Production version is 1.3.0', 'application-version" content="1.3.0"' in html)
-check('Modern Supabase publishable key is used', 'sb_publishable_' in html and 'publishableKey:' in html)
-check('Legacy anonymous JWT is no longer configured', 'anonKey:' not in html)
-check('No Supabase server secret is shipped', 'sb_secret_' not in html and 'service_role' not in html)
-check('Managed game-session Edge Function is configured', "function: 'game-session'" in html)
+check('Modern Supabase publishable key is used', 'sb_publishable_' in config and 'publishableKey:' in config)
+check('Legacy anonymous JWT is no longer configured', 'anonKey:' not in config)
+check('No Supabase server secret is shipped', 'sb_secret_' not in html and "'service_role'" not in html and '"service_role"' not in html)
+check('Managed game-session Edge Function is configured', "function: 'game-session'" in config)
 check('No seasonal progression model is present', 'season_id' not in html.lower() and 'currentseason' not in html.lower())
 
 server = subprocess.Popen(
@@ -130,7 +130,6 @@ try:
         check('Sector modifier is active', snap.get('modifier') in {'clear','ion','hunter','night','repair'}, snap)
         check('Daily mode HUD is visible', page.locator('#runModeHud').inner_text().startswith('DAILY /'))
 
-        before_choices = None
         page.evaluate('__NEON_RIFT_TEST__.finishSector()')
         snap = page.evaluate('__NEON_RIFT_TEST__.snapshot()')
         check('Sector clear reaches upgrade screen', snap['state'] == 'upgrade')
@@ -175,7 +174,6 @@ try:
         page.locator('#careerBackBtn').click()
         page.locator('#hangarBtn').click()
 
-        # A fresh daily run should remain a nine-sector challenge with no endless continuation.
         page.locator('#dailyRunBtn').click()
         page.wait_for_function("__NEON_RIFT_TEST__.snapshot().state === 'playing'")
         page.evaluate('__NEON_RIFT_TEST__.forceWave(9); __NEON_RIFT_TEST__.finishSector()')
