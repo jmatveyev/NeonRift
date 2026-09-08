@@ -16,6 +16,8 @@ jobs:
   validate:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    env:
+      PYTHONUNBUFFERED: '1'
     steps:
       - name: Check out candidate
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
@@ -51,10 +53,7 @@ jobs:
           import hashlib
           def blob(data): return hashlib.sha1((f'blob {len(data)}\0').encode()+data).hexdigest()
           a=Path('index.html').read_bytes();b=Path('neon-rift.html').read_bytes()
-          assert a==b
-          if blob(a)!='0ed6a04c587915518f75729a33ff40e42f825a34':
-              raise RuntimeError('Candidate no longer starts from the audited 1.4 artifact')
-          Path('/tmp/neon-rift-1.4.html').write_bytes(a)
+          assert a==b and blob(a)=='0ed6a04c587915518f75729a33ff40e42f825a34'
           PY
           python3 tools/visual-v15/build.py
           cp index.html /tmp/neon-rift-1.5-production.html
@@ -68,6 +67,19 @@ jobs:
           if(a.includes('drawPlayerV14'))throw Error('Old rendering wrappers were not removed');
           console.log('Syntax, save keys, managed modes, audio, and new renderer verified.');
           JS
+      - name: Package exact candidate for independent visual review
+        run: |
+          mkdir -p artifacts/candidate
+          cp index.html artifacts/candidate/index.html
+          cp -R tools/visual-v15 artifacts/candidate/source
+          cp tests/v15_regression.py artifacts/candidate/
+          cp docs/VISUAL-1.5.md artifacts/candidate/
+      - name: Export candidate before browser tests
+        uses: actions/upload-artifact@v4
+        with:
+          name: neon-rift-1.5-candidate
+          path: artifacts/candidate/
+          retention-days: 7
       - name: Install browser QA runtime
         run: |
           python3 -m pip install --disable-pip-version-check 'playwright>=1.55,<2' Pillow
@@ -77,7 +89,19 @@ jobs:
           with sync_playwright() as p:
               print('CHROMIUM='+p.chromium.executable_path)
           PY
+      - name: Adapt inherited tests to the 1.5 version and software GPU
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          for name in ['startup_smoke','mobile_controls','v13_regression','v131_regression']:
+              s=Path(f'tests/{name}.py').read_text()
+              s=s.replace("args=['--no-sandbox', '--disable-dev-shm-usage']", "args=['--no-sandbox','--disable-dev-shm-usage','--use-angle=swiftshader','--enable-unsafe-swiftshader']")
+              s=s.replace("args=['--no-sandbox','--disable-dev-shm-usage']", "args=['--no-sandbox','--disable-dev-shm-usage','--use-angle=swiftshader','--enable-unsafe-swiftshader']")
+              s=s.replace('1.3.1','1.5.0')
+              Path(f'tests/.v15_{name}.py').write_text(s)
+          PY
       - name: Run inherited input and startup regressions
+        timeout-minutes: 5
         run: |
           trap 'cp /tmp/neon-rift-1.5-production.html index.html' EXIT
           python3 - <<'PY'
@@ -91,36 +115,28 @@ jobs:
           s=s.replace(a,"version: 1, pilot: 'QA PILOT', xp: 0",1)
           p.write_text(s)
           PY
-          xvfb-run -a python3 tests/startup_smoke.py
-          xvfb-run -a python3 tests/mobile_controls.py
+          xvfb-run -a python3 tests/.v15_startup_smoke.py
+          xvfb-run -a python3 tests/.v15_mobile_controls.py
       - name: Run inherited managed-play, audio and onboarding regressions
+        timeout-minutes: 4
         run: |
           cp /tmp/neon-rift-1.5-production.html index.html
-          trap 'rm -f tests/.v15_compat_v13.py tests/.v15_compat_v131.py' EXIT
-          python3 - <<'PY'
-          from pathlib import Path
-          for name in ['v13','v131']:
-              s=Path(f'tests/{name}_regression.py').read_text()
-              s=s.replace('1.3.1','1.5.0')
-              Path(f'tests/.v15_compat_{name}.py').write_text(s)
-          PY
-          xvfb-run -a python3 tests/.v15_compat_v13.py
-          xvfb-run -a python3 tests/.v15_compat_v131.py
+          xvfb-run -a python3 tests/.v15_v13_regression.py
+          xvfb-run -a python3 tests/.v15_v131_regression.py
       - name: Run new real-WebGL visual and mobile controls suite
+        timeout-minutes: 5
         run: |
           xvfb-run -a python3 tests/v15_regression.py
-      - name: Stage exact release diagnostics
+      - name: Collect browser test evidence
         if: always()
         run: |
           mkdir -p artifacts/v15
-          test ! -f /tmp/neon-rift-1.5-production.html || cp /tmp/neon-rift-1.5-production.html artifacts/v15/index.html
-          cp -R tools/visual-v15 artifacts/v15/source 2>/dev/null || true
-          cp tests/v15_regression.py artifacts/v15/ 2>/dev/null || true
-      - name: Upload test evidence and runnable candidate
+          cp tests/*results*.json artifacts/v15/ 2>/dev/null || true
+      - name: Upload screenshots and assertion results
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: neon-rift-1.5-candidate
+          name: neon-rift-1.5-browser-evidence
           path: artifacts/v15/
           retention-days: 7
       - name: Commit tested source and paired launch files
