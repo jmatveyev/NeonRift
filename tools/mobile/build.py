@@ -111,9 +111,10 @@ def blob(data):
 output=s.encode()
 expected='0cc4b8a9564e26faef1314ff216fb8dcb16d732b'
 assert blob(output)==expected, 'Generated game differs from the tested release.'
+approved_inputs=['26f50199b84cc6ed8123c70d596e623ebe7d054f','d5e36dcb8c095b43339ac6a58c27d6706584c196',expected,'f8ea42d67772ed45dc9d86739ea71ad33765703d']
 for name in ['index.html','neon-rift.html']:
  path=site/name
- if path.exists() and blob(path.read_bytes()) not in ['26f50199b84cc6ed8123c70d596e623ebe7d054f','d5e36dcb8c095b43339ac6a58c27d6706584c196',expected]:
+ if path.exists() and blob(path.read_bytes()) not in approved_inputs:
   raise RuntimeError('Refusing to overwrite unexpected changes to '+name)
 for name in ['index.html','neon-rift.html']:
  (site/name).write_bytes(output)

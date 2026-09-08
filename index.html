@@ -80,6 +80,14 @@
 @media(max-width:390px){.career-panel{padding:16px}.achievement-grid{grid-template-columns:1fr 1fr}.career-stat-grid{gap:6px}.career-run-score{font-size:13px}.career-strip{gap:7px;padding:9px}.career-chip{font-size:9px}}
 
 </style>
+<script>
+window.NEON_RIFT_ONLINE = {
+  enabled: true,
+  url: 'https://pjkdwekdtyzoqtrnhwaa.supabase.co',
+  anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBqa2R3ZWtkdHl6b3F0cm5od2FhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg4MjE5OTEsImV4cCI6MjEwNDM5Nzk5MX0.bdxTvio835csAibaAAVYz0lQiaraBzEC_VNrP84A6Mg',
+  table: 'runs'
+};
+</script>
 </head>
 <body>
 <canvas id="game" aria-label="Neon Rift game arena. Move with WASD or arrow keys. Weapons fire automatically. Space dashes, E activates overdrive, and P pauses." role="img"></canvas>
@@ -115,7 +123,7 @@
   <div class="career-card"><div class="career-section-title"><h3>ACHIEVEMENTS</h3><span>8 SIGNAL BADGES</span></div><div class="achievement-grid" id="achievementGrid"></div></div>
   <div class="career-card"><div class="career-section-title"><h3>RECENT FLIGHT LOG</h3><span>LAST 5</span></div><div class="career-list" id="careerHistory"></div></div>
  </div>
- <div class="career-foot"><span class="career-note">Career data is separate from the original Neon Rift save, so existing personal bests and settings remain intact. The optional community board sends nothing until a backend is explicitly configured.</span><button class="primary" id="careerBackBtn">BACK <span class="arrow" aria-hidden="true">&#x2192;</span></button></div>
+ <div class="career-foot"><span class="career-note">Career data is separate from the original Neon Rift save, so existing personal bests and settings remain intact. Community leaderboard submissions contain only the run summary shown here.</span><button class="primary" id="careerBackBtn">BACK <span class="arrow" aria-hidden="true">&#x2192;</span></button></div>
 </div></section>
 <section class="screen" id="resultScreen" hidden aria-label="Run results"><div class="panel"><span class="tag" id="resultTag">SIGNAL LOST</span><h2 id="resultTitle">That was a good run.</h2><p id="resultDescription">The rift keeps your ship. You keep the experience.</p><div class="result-score mono" id="resultScore">0</div><div class="record-flag" id="recordFlag">PERSONAL BEST</div><div class="result-stats"><div><strong id="resultSectors">0 / 9</strong><span>SECTORS CLEARED</span></div><div><strong id="resultKills">0</strong><span>ENEMIES DEFEATED</span></div><div><strong id="resultTime">0:00</strong><span>FLIGHT TIME</span></div></div><div class="result-build" id="resultBuild"></div><div class="run-bonus" id="resultCareerBonus">CAREER XP WILL BE RECORDED</div><div class="result-career-actions"><button class="secondary" id="resultCareerBtn">Pilot profile</button><button class="secondary" id="resultShareBtn">Share this run</button></div><button class="primary" id="retryBtn">ONE MORE RUN <span class="arrow" aria-hidden="true">&#x2192;</span></button><button class="secondary" id="endlessBtn" hidden>Push your luck: enter endless mode</button><button class="secondary" id="hangarBtn">Return to hangar</button></div></section>
 <footer class="footer-note" id="footer"><span>BUILT FOR THE ONE-MORE-RUN CROWD.</span><span>OFFLINE READY &nbsp; / &nbsp; NO ACCOUNTS. JUST ARCADE.</span></footer>

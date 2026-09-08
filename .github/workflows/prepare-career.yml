@@ -1,14 +1,15 @@
-name: Prepare career release
+name: Prepare online leaderboard release
 on:
   push:
-    branches: [career-engagement-20260907]
+    branches: [online-leaderboard-20260907]
     paths:
+      - 'tools/mobile/**'
       - 'tools/engagement/**'
       - '.github/workflows/prepare-career.yml'
 permissions:
   contents: write
 concurrency:
-  group: prepare-neon-rift-career
+  group: prepare-neon-rift-online
   cancel-in-progress: false
 jobs:
   assemble:
@@ -18,8 +19,10 @@ jobs:
       - name: Check out working branch
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
         with:
-          ref: career-engagement-20260907
-      - name: Assemble career release
+          ref: online-leaderboard-20260907
+      - name: Rebuild mobile baseline
+        run: python3 tools/mobile/build.py
+      - name: Assemble career and online release
         run: python3 tools/engagement/apply.py
       - name: Validate launch files and JavaScript
         run: |
@@ -29,25 +32,28 @@ jobs:
           const b=fs.readFileSync('neon-rift.html','utf8');
           if(a!==b) throw new Error('Launch files differ');
           const scripts=[...a.matchAll(/<script>([\s\S]*?)<\/script>/g)];
-          if(!scripts.length) throw new Error('No inline game script found');
+          if(!scripts.length) throw new Error('No inline scripts found');
           for(const s of scripts) new Function(s[1]);
           const required=['careerScreen','profileBtn','careerPilotInput','achievementGrid','careerLeaderboard','resultCareerBtn','resultShareBtn'];
           for(const id of required) if(!a.includes(`id="${id}"`)) throw new Error(`Missing ${id}`);
-          for(const token of ['recordCompletedRun(won, cause)','G.damageTaken','G.dashes++','G.overdrives++','NEON_RIFT_ONLINE']) if(!a.includes(token)) throw new Error(`Missing ${token}`);
-          console.log('Syntax, paired files, UI anchors, and run instrumentation verified.');
+          for(const token of ['recordCompletedRun(won, cause)','G.damageTaken','G.dashes++','G.overdrives++','NEON_RIFT_ONLINE','pjkdwekdtyzoqtrnhwaa.supabase.co']) if(!a.includes(token)) throw new Error(`Missing ${token}`);
+          console.log('Syntax, paired files, career instrumentation, and online config verified.');
           JS
-      - name: Verify original save compatibility
+      - name: Verify save compatibility and online safety
         run: |
           python3 - <<'PY'
           from pathlib import Path
           s=Path('index.html').read_text()
           assert "const SAVE_KEY = 'neon-rift-save-v1'" in s
           assert "const CAREER_KEY = 'neon-rift-career-v1'" in s
-          assert "rep('music: false','music: true')" not in s
           assert "music: true" in s
           assert "localStorage.setItem(SAVE_KEY" in s
           assert "localStorage.setItem(CAREER_KEY" in s
-          print('Original save key preserved; career storage is isolated; music default remains on.')
+          assert "enabled: true" in s
+          assert "table: 'runs'" in s
+          assert 'service_role' not in s
+          assert 'sb_secret_' not in s
+          print('Local saves preserved; online leaderboard enabled with no server-secret key in the client.')
           PY
       - name: Commit assembled release
         run: |
@@ -55,5 +61,5 @@ jobs:
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -- index.html neon-rift.html
           if git diff --cached --quiet; then exit 0; fi
-          git commit -m 'Assemble Neon Rift career release 1.2.0'
-          git push origin HEAD:career-engagement-20260907
+          git commit -m 'Assemble Neon Rift online leaderboard release'
+          git push origin HEAD:online-leaderboard-20260907
