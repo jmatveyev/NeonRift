@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#080c16">
 <meta name="description" content="A complete, offline arcade survival game. Nine sectors. Three bosses. One more run.">
 <title>NEON RIFT - Arcade Survival</title>
-<meta name="application-version" content="1.6.0">
+<meta name="application-version" content="1.7.0">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%23080c16'/%3E%3Cpath d='M32 8 54 52 32 42 10 52Z' fill='%2317353b' stroke='%2378f8df' stroke-width='3'/%3E%3Cpath d='m32 22 6 15H26Z' fill='%23e3fff8'/%3E%3C/svg%3E">
 <style>
 :root{color-scheme:dark;--bg:#080c16;--panel:rgba(12,19,32,.95);--line:rgba(161,196,227,.15);--text:#edf5fa;--muted:#8d9eae;--cyan:#78f8df;--blue:#6eb8ff;--gold:#ffd78b;--pink:#ff678e;--font:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
@@ -204,6 +204,68 @@ body.nr16 .sector-name{max-width:100%;overflow-wrap:anywhere;}
  body.nr16 .sector{min-width:350px;padding:13px 20px;}body.nr16 .sector .tag{font-size:12px;}body.nr16 .sector-name{font-size:11px;}body.nr16 #runModeHud{font-size:10px;}body.nr16 #bossHud{top:132px;max-width:530px;width:530px;}body.nr16 #bossName{font-size:12px;}
  body.nr16 .ability{min-width:170px;padding:16px 20px;}body.nr16 .ability strong{font-size:13px;}body.nr16 .ability small{font-size:11px;}
 }
+
+/* Neon Rift 1.7 - cinematic transit and native-resolution showcase polish. */
+body.nr17 .nr-preview-wrap{isolation:isolate;overflow:hidden;border-radius:12px;background:linear-gradient(180deg,rgba(9,24,35,.08),rgba(8,20,31,.24));}
+body.nr17 #nrShipPreview{height:clamp(270px,32vh,430px);min-height:270px;}
+body.nr17 .nr-preview-label{position:relative;z-index:3;padding:10px 12px 0;margin:0;color:#b5d8df;display:grid;grid-template-columns:1fr auto auto;gap:18px;align-items:center;}
+body.nr17 .nr-preview-caption{position:relative;z-index:3;padding:0 12px 14px;background:linear-gradient(180deg,transparent,rgba(5,16,25,.76));}
+body.nr17 #nrShowcaseResolution{display:block;margin-left:auto;font:600 8px/1.4 ui-monospace,monospace;letter-spacing:1px;color:#79e6d7;text-align:right;white-space:nowrap;}
+body.nr17 .nr-preview-wrap::before{content:"";position:absolute;inset:32px 0 36px;z-index:0;pointer-events:none;background:radial-gradient(ellipse at 52% 48%,rgba(99,232,221,.12),transparent 42%),linear-gradient(90deg,transparent 0 7%,rgba(117,240,226,.035) 7.2% 7.35%,transparent 7.55% 92%,rgba(117,240,226,.035) 92.2% 92.35%,transparent 92.55%);}
+body.nr17 .nr-preview-wrap::after{content:"SHOWCASE BAY 07  /  LIVE RENDER";position:absolute;left:14px;bottom:44px;z-index:3;font:600 7px/1 ui-monospace,monospace;letter-spacing:1.5px;color:#6e96a1;pointer-events:none;}
+
+/* Travel is now primarily a rendered scene. This HUD only carries navigation and controls. */
+body.nr17.nr-travelling .topbar,body.nr17.nr-travelling .footer-note{opacity:0!important;pointer-events:none!important;}
+body.nr17 #sectorTravel{background:transparent;overflow:hidden;padding:0;align-items:stretch;justify-content:stretch;pointer-events:none;}
+body.nr17 #sectorTravel::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 50% 50%,transparent 28%,rgba(2,7,15,.18) 60%,rgba(1,4,10,.58) 100%);pointer-events:none;}
+body.nr17 .travel-tunnel{display:none!important;}
+body.nr17:not(.nr3d) .travel-tunnel{display:block!important;position:absolute;inset:-30%;background:repeating-conic-gradient(from 0deg,transparent 0deg 7deg,rgba(133,231,237,.16) 7.1deg 7.3deg,transparent 7.45deg 13deg);mask-image:radial-gradient(circle,transparent 10%,#000 76%);animation:nrTransit 1.15s linear infinite;}
+body.nr17.nr-reduced:not(.nr3d) .travel-tunnel,body.nr17.nr-transit-paused:not(.nr3d) .travel-tunnel{animation:none;opacity:.18;}
+body.nr17 .travel-card{position:absolute;left:50%;bottom:max(26px,calc(env(safe-area-inset-bottom) + 18px));transform:translateX(-50%);width:min(880px,calc(100% - 40px));padding:15px 18px 14px;display:grid;grid-template-columns:minmax(150px,.85fr) minmax(260px,1.5fr) auto;grid-template-areas:'route destination actions' 'progress progress actions';gap:9px 18px;align-items:center;text-align:left;background:linear-gradient(100deg,rgba(5,16,28,.88),rgba(9,25,36,.72));border:1px solid color-mix(in srgb,var(--travel-accent) 42%,#314b5b);border-radius:9px;box-shadow:0 20px 70px rgba(0,0,0,.42),inset 0 1px rgba(255,255,255,.035);backdrop-filter:blur(14px);pointer-events:auto;}
+body.nr17 .travel-kicker{grid-area:route;font-size:9px;letter-spacing:2.4px;margin:0;color:var(--travel-accent);}
+body.nr17 .travel-departure{grid-area:route;align-self:end;margin:20px 0 0;font-size:8px;letter-spacing:1.1px;color:#738d9b;}
+body.nr17 .travel-departure span{display:inline;color:#9eb9c5;}
+body.nr17 #travelMap{display:none;}
+body.nr17 .travel-card h2{grid-area:destination;margin:0;font-size:clamp(19px,2.2vw,28px);letter-spacing:-.5px;color:#e4eff1;}
+body.nr17 #travelCoordinate{grid-area:destination;align-self:end;margin:28px 0 0;font-size:8px;letter-spacing:1.4px;color:var(--travel-accent);}
+body.nr17 #travelSub{display:none;}
+body.nr17 .travel-track{grid-area:progress;height:2px;margin:0;background:rgba(101,135,151,.24);overflow:hidden;}
+body.nr17 .travel-track>div{position:relative;background:linear-gradient(90deg,rgba(255,255,255,.6),var(--travel-accent));box-shadow:0 0 14px var(--travel-accent);transition:width .04s linear;}
+body.nr17 #travelPhase{grid-area:progress;justify-self:end;margin-top:10px;font-size:8px;letter-spacing:1.5px;color:#cce3df;}
+body.nr17 #travelUpgrade{grid-area:progress;margin-top:10px;min-height:0;font-size:8px;color:#739ca1;}
+body.nr17 .travel-actions{grid-area:actions;display:grid;grid-template-columns:1fr;gap:6px;min-width:136px;}
+body.nr17 .travel-actions button{min-height:37px;padding:8px 12px;margin:0;flex:none;font-size:8px;letter-spacing:.7px;border-radius:5px;}
+body.nr17.nr-transit-paused #sectorTravel::after{content:"TRANSIT PAUSED";position:absolute;inset:0;display:grid;place-items:center;background:rgba(2,7,15,.54);color:#e1f3f1;font:700 13px/1 ui-monospace,monospace;letter-spacing:4px;pointer-events:none;}
+body.nr17.nr-transit-warp #sectorTravel::before{background:radial-gradient(circle at 50% 50%,transparent 18%,rgba(27,8,49,.11) 55%,rgba(1,4,10,.48) 100%);}
+body.nr17.nr-transit-arrival #sectorTravel::before{background:radial-gradient(circle at 50% 45%,rgba(255,255,255,.04),transparent 25%,rgba(1,4,10,.4) 100%);}
+
+@media(max-width:700px){
+ body.nr17 #nrShipPreview{height:190px;min-height:190px;}
+ body.nr17 .nr-preview-label{grid-template-columns:1fr auto;gap:8px;}body.nr17 #nrPreviewCode{display:none;}body.nr17 #nrShowcaseResolution{font-size:6px;letter-spacing:.5px;}
+ body.nr17 .nr-preview-wrap::after{font-size:6px;bottom:39px;}
+ body.nr17 .travel-card{bottom:max(14px,calc(env(safe-area-inset-bottom) + 8px));width:calc(100% - 24px);padding:12px;grid-template-columns:1fr auto;grid-template-areas:'destination actions' 'route actions' 'progress progress';gap:6px 10px;}
+ body.nr17 .travel-kicker{grid-area:route;font-size:7px;letter-spacing:1px;}
+ body.nr17 .travel-departure{grid-area:route;margin:13px 0 0;font-size:7px;}
+ body.nr17 .travel-card h2{font-size:18px;line-height:1.05;}
+ body.nr17 #travelCoordinate{font-size:7px;margin-top:21px;letter-spacing:.8px;}
+ body.nr17 .travel-actions{min-width:98px;}
+ body.nr17 .travel-actions button{min-height:34px;padding:6px 8px;font-size:7px;}
+ body.nr17 #travelPhase,body.nr17 #travelUpgrade{font-size:7px;margin-top:8px;}
+}
+@media(min-width:2500px) and (min-height:1300px){
+ body.nr17 #nrShipPreview{height:440px;}
+ body.nr17 .nr-preview-caption strong{font-size:20px;}
+ body.nr17 #nrShowcaseResolution{font-size:10px;}
+ body.nr17 .travel-card{width:min(1120px,calc(100% - 80px));padding:20px 24px;grid-template-columns:240px 1fr 190px;}
+ body.nr17 .travel-card h2{font-size:34px;}
+ body.nr17 .travel-actions button{min-height:44px;font-size:10px;}
+}
+@media(prefers-reduced-motion:reduce){body.nr17 .travel-track>div{transition:none;}}
+
+body.nr17 #nrControllerStatus{display:inline-block;margin-left:12px;font:600 7px/1 ui-monospace,monospace;letter-spacing:1px;color:#66838d;vertical-align:middle;}
+body.nr17.nr-gamepad #nrControllerStatus{color:#78f8df;}
+body.nr17 button:focus-visible,body.nr17 select:focus-visible,body.nr17 .upgrade-card:focus-visible,body.nr17 .rig:focus-visible{outline:2px solid #78f8df;outline-offset:3px;box-shadow:0 0 0 5px rgba(120,248,223,.10);}
+@media(max-width:700px){body.nr17 #nrControllerStatus{display:none;}}
 
 </style>
 <script>
@@ -2357,7 +2419,7 @@ addEventListener('keydown', (event) => { if (state === 'career' && event.code ==
 queueMicrotask(() => { ensureV13UI(); applyCareerTheme(); syncCheckpointButton(); });
 
 // NEON RIFT 1.3.1 - louder mobile mix, callsign onboarding and visible ranked Endless mode.
-const V131_VERSION = '1.6.0';
+const V131_VERSION = '1.7.0';
 const PILOT_CONFIRM_KEY = 'neon-rift-pilot-confirmed-v1';
 let pendingPilotMode = null;
 let v131Limiter = null;
@@ -2847,16 +2909,16 @@ function nr15ApplyQuality(){const e=nr15State.engine;if(e)e.quality=nr15State.qu
  const select=$('graphicsSelect');if(select)select.value=nr15State.quality;
  if($('graphicsBtn'))$('graphicsBtn').textContent={auto:'3D / AUTO',low:'PERFORMANCE',high:'HIGH',ultra:'ULTRA / 4K',compatibility:'2D FALLBACK'}[nr15State.quality]||'3D / AUTO';
  nr15State.staticKey='';nr16GraphicsStatus();}
-function nr15Fallback(reason){nr15State.mode='compatibility';nr15State.reason=String(reason||'Compatibility selected');nr15Canvas.hidden=true;nr15State.staticKey='';document.body.classList.remove('nr3d');$('nrBuild')?.replaceChildren(document.createTextNode('1.6.0 / 2D COMPATIBILITY'));nr16GraphicsStatus();if($('nrRenderNote'))$('nrRenderNote').textContent='Compatibility renderer active. The 3D view needs WebGL 2.';}
+function nr15Fallback(reason){nr15State.mode='compatibility';nr15State.reason=String(reason||'Compatibility selected');nr15Canvas.hidden=true;nr15State.staticKey='';document.body.classList.remove('nr3d');$('nrBuild')?.replaceChildren(document.createTextNode('1.7.0 / 2D COMPATIBILITY'));nr16GraphicsStatus();if($('nrRenderNote'))$('nrRenderNote').textContent='Compatibility renderer active. The 3D view needs WebGL 2.';}
 function nr15Init(){if(nr15State.quality==='compatibility'){nr15Fallback('Player selected compatibility');return;}try{nr15State.engine=new NR15.Engine(nr15Canvas);NR15Art.build(nr15State.engine);NR16World.init(nr15State.engine);nr15State.engine.quality=nr15State.quality;nr15State.mode='webgl2';nr15Canvas.hidden=false;document.body.classList.add('nr3d');nr15State.sceneReady=true;if(!nr15Canvas.dataset.contextHandlers){nr15Canvas.dataset.contextHandlers='1';nr15Canvas.addEventListener('webglcontextlost',event=>{event.preventDefault();if(state==='playing')pauseGame();nr15Fallback('Graphics context lost. Your run is paused.');});nr15Canvas.addEventListener('webglcontextrestored',()=>{nr15State.engine=null;nr15State.zone=-1;nr15Init();nr15ApplyQuality();});}}catch(e){nr15Fallback(e.message);}}
 function nr15BuildUI(){document.body.classList.add('nr15');let home=$('homeScreen').querySelector('.home-layout');let copy=home.firstElementChild,hangar=home.querySelector('.hangar');
  if(!home.querySelector('.nr-intro')){let intro=document.createElement('div');intro.className='nr-intro';for(let sel of['.eyebrow','h1','.home-copy']){let el=copy.querySelector(sel);if(el)intro.appendChild(el);}intro.querySelector('.tag').textContent='ORBITAL COMBAT / VISUAL EDITION';intro.querySelector('h1').innerHTML='NEON<span>RIFT</span>';intro.querySelector('.home-copy').textContent='Three ships. Nine hostile sectors. Build your firepower and break through.';
   let preview=document.createElement('section');preview.className='nr-preview-wrap';preview.setAttribute('aria-label','Selected ship preview');preview.innerHTML='<div class="nr-preview-label"><span>LIVE SHIP PREVIEW</span><span id="nrPreviewCode">NR / 01</span></div><div id="nrShipPreview"></div><div class="nr-preview-caption"><strong id="nrShipName">STRIKER</strong><span id="nrShipDesc">COIL-CANNON INTERCEPTOR</span></div>';
   let modes=document.createElement('div');modes.className='nr-modes';while(copy.firstChild)modes.appendChild(copy.firstChild);copy.remove();home.prepend(intro,preview);home.appendChild(modes);hangar.classList.add('nr-hangar');hangar.querySelector('.tag').textContent='SELECT AIRFRAME';hangar.querySelector('.hangar-head .muted').textContent='ALL SHIPS UNLOCKED';
   const texts={striker:['STRIKER','Balanced interceptor','105 HULL / RAPID FIRE'],ghost:['GHOST','Twin-cannon stealth craft','80 HULL / HIGH SPEED'],bastion:['BASTION','Heavy armored gunship','150 HULL / PIERCING']};for(let b of hangar.querySelectorAll('.rig')){let t=texts[b.dataset.rig];b.querySelector('strong').textContent=t[0];b.querySelector('small').innerHTML=t[1]+'<br>'+t[2];b.querySelector('svg').innerHTML=nr15RigIcon(b.dataset.rig);b.addEventListener('click',nr15Sync);}
-  let build=document.createElement('span');build.id='nrBuild';build.textContent=nr15State.mode==='webgl2'?'1.6.0 / 3D VISUAL EDITION':'1.6.0 / 2D COMPATIBILITY';document.querySelector('.brand').appendChild(build);
+  let build=document.createElement('span');build.id='nrBuild';build.textContent=nr15State.mode==='webgl2'?'1.7.0 / 3D CINEMATIC BUILD':'1.7.0 / 2D COMPATIBILITY';document.querySelector('.brand').appendChild(build);
   let note=document.createElement('p');note.id='nrRenderNote';note.textContent='';preview.appendChild(note);
-  let setting=document.createElement('div');setting.className='setting';setting.innerHTML='<span>Graphics</span><button id="graphicsBtn" aria-label="Change graphics quality">3D / AUTO</button>';$('motionBtn').closest('.setting').before(setting);$('graphicsBtn').onclick=()=>{let order=['auto','low','high','ultra','compatibility'];nr15State.quality=order[(order.indexOf(nr15State.quality)+1)%3];try{localStorage.setItem('neon-rift-graphics-v1',nr15State.quality);}catch(_){}if(nr15State.quality==='compatibility')nr15Fallback('Player selected compatibility');else if(!nr15State.engine||nr15State.engine.gl.isContextLost()){nr15Init();}else{nr15State.mode='webgl2';nr15Canvas.hidden=false;document.body.classList.add('nr3d');$('nrBuild').textContent='1.6.0 / 3D VISUAL EDITION';$('nrRenderNote').textContent='';}nr15ApplyQuality();};
+  let setting=document.createElement('div');setting.className='setting';setting.innerHTML='<span>Graphics</span><button id="graphicsBtn" aria-label="Change graphics quality">3D / AUTO</button>';$('motionBtn').closest('.setting').before(setting);$('graphicsBtn').onclick=()=>{let order=['auto','low','high','ultra','compatibility'];nr15State.quality=order[(order.indexOf(nr15State.quality)+1)%3];try{localStorage.setItem('neon-rift-graphics-v1',nr15State.quality);}catch(_){}if(nr15State.quality==='compatibility')nr15Fallback('Player selected compatibility');else if(!nr15State.engine||nr15State.engine.gl.isContextLost()){nr15Init();}else{nr15State.mode='webgl2';nr15Canvas.hidden=false;document.body.classList.add('nr3d');$('nrBuild').textContent='1.7.0 / 3D CINEMATIC BUILD';$('nrRenderNote').textContent='';}nr15ApplyQuality();};
   let banner=document.createElement('div');banner.id='nrBossIntro';banner.setAttribute('aria-hidden','true');banner.innerHTML='<span>CAPITAL-CLASS CONTACT</span><strong id="nrBossTitle">THE GATEKEEPER</strong><small id="nrBossClass">ARMORED SIEGE CARRIER</small>';document.body.appendChild(banner);
   const ro=window.ResizeObserver?new ResizeObserver(nr15Measure):null;if(ro){ro.observe(preview);ro.observe(home);}home.parentElement.addEventListener('scroll',nr15Measure,{passive:true});window.addEventListener('resize',nr15Measure,{passive:true});
  }
@@ -2917,7 +2979,7 @@ if(new URLSearchParams(location.search).has('test')){window.__NR15_QA={get statu
 const nr16Travel={active:false,elapsed:0,duration:1.45,paused:false,from:1,to:2,upgrade:'',interrupted:false};
 function nr16GraphicsStatus(){const el=$('graphicsResolution');if(!el)return;const e=nr15State.engine;el.textContent=nr15State.mode==='webgl2'&&e?.w?`${e.w} x ${e.h} rendered pixels${nr15State.quality==='ultra'?' / up to 3840 x 2160':''}`:'2D compatibility renderer';}
 function nr16SetQuality(value){if(!['auto','low','high','ultra','compatibility'].includes(value))return;nr15State.quality=value;resize();nr15Measure();try{localStorage.setItem('neon-rift-graphics-v1',value);}catch(_){}
- if(value==='compatibility')nr15Fallback('Player selected compatibility');else if(!nr15State.engine||nr15State.engine.gl.isContextLost())nr15Init();else{nr15State.mode='webgl2';nr15Canvas.hidden=false;document.body.classList.add('nr3d');$('nrBuild').textContent='1.6.0 / 3D VISUAL EDITION';$('nrRenderNote').textContent='';}
+ if(value==='compatibility')nr15Fallback('Player selected compatibility');else if(!nr15State.engine||nr15State.engine.gl.isContextLost())nr15Init();else{nr15State.mode='webgl2';nr15Canvas.hidden=false;document.body.classList.add('nr3d');$('nrBuild').textContent='1.7.0 / 3D CINEMATIC BUILD';$('nrRenderNote').textContent='';}
  nr15ApplyQuality();nr15State.staticKey='';queueMicrotask(()=>{nr15Render(true);nr16GraphicsStatus();});}
 function nr16TripLabels(){const from=NR16World.info(nr16Travel.from),to=NR16World.info(nr16Travel.to);$('travelFrom').textContent=from.name;$('travelTo').textContent=to.name;$('travelSub').textContent=to.sub;$('travelCoordinate').textContent=to.coordinate;$('travelNumber').textContent=`SECTOR ${String(nr16Travel.to).padStart(2,'0')}`;$('travelUpgrade').textContent=nr16Travel.upgrade?`${nr16Travel.upgrade.toUpperCase()} INSTALLED`:'';document.documentElement.style.setProperty('--travel-accent',to.accent);$('travelMap').replaceChildren(...NR16World.destinations.map((loc,i)=>{const dot=document.createElement('span');dot.textContent=String(i+1).padStart(2,'0');dot.className=i===NR16World.index(nr16Travel.to)?'next':i<NR16World.index(nr16Travel.to)?'visited':'';dot.title=loc.name;return dot;}));}
 function nr16TravelToNext(upgrade=''){
@@ -2986,6 +3048,202 @@ function nr16FallbackFloor(time){const z=NR16World.index(G?.wave||1),d=NR16World
  else{const radii=z===2?[260,360,415]:z===6?[200,510]:z===8?[135,330,600]:[225,480];for(const r of radii){ctx.beginPath();ctx.arc(0,0,r,0,TAU);ctx.stroke();}for(let i=0;i<8;i++){let a=i*TAU/8;ctx.save();ctx.rotate(a);ctx.strokeRect(-20,-470,40,z===6?160:95);ctx.restore();}}
  ctx.restore();ctx.save();ctx.strokeStyle=d.accent+'55';ctx.lineWidth=2;ctx.strokeRect(24,24,WORLD.w-48,WORLD.h-48);ctx.restore();}
 drawBackground=nr16FallbackBackground;drawFloor=nr16FallbackFloor;
+
+// Neon Rift 1.7 - cinematic travel, native-resolution showcase rendering and display-only ship detail.
+const NR17_VERSION='1.7.0';
+const nr17State={lastMenuPaint:0,travelFrom:-1,travelTo:-1,showcaseBuilt:false,travelBuilt:false,travelCue:0,padButtons:[],padSeen:false,padMoveAt:0};
+
+function nr17Ease(t){t=Math.max(0,Math.min(1,t));return t*t*(3-2*t);}
+function nr17TravelF(){return nr16Travel?.active?Math.max(0,Math.min(1,nr16Travel.elapsed/Math.max(.001,nr16Travel.duration))):0;}
+
+function nr17DetailedShip(id){
+ const b=NR15Art.ship(id),M=NR15Art.M;
+ const box=(x,y,z,w,l,h,c,yaw=0)=>b.box(x,y,z,w,l,h,c,.35,yaw);
+ const glow=(x,y,z,w,l,c,e=1.1,yaw=0)=>b.glow(x,y,z,w,l,c,e,yaw);
+ // Display-only paneling. Combat still uses the lighter original mesh.
+ for(let s of[-1,1]){
+   for(let i=0;i<6;i++){const y=-15+i*6.3;box(s*(id==='ghost'?13+i*1.6:id==='bastion'?14.2:10+i*1.7),y,12.7,1.05,4.1,.55,M.black,s*.07);}
+   for(let i=0;i<4;i++){const y=2+i*5.2;glow(s*(id==='bastion'?21:17),y,13.5,.55,2.6,id==='ghost'?M.lilac:id==='bastion'?M.amber:M.cyan,.55);}
+   box(s*(id==='ghost'?27: id==='bastion'?22:23),12,9.8,2.2,15,1.1,M.edge,s*.05);
+   box(s*(id==='ghost'?18:12),22,9.4,5.2,3.0,2.0,M.black);
+   b.ring(s*(id==='ghost'?15:13),23,7.2,id==='bastion'?4.7:3.6,.72,1.2,id==='bastion'?M.amber:id==='ghost'?M.lilac:M.cyan,24,0,Math.PI*2,1.2);
+ }
+ for(let y=-20;y<=11;y+=5.2){box(-2.9,y,15.8,.55,2.4,.45,M.black);box(2.9,y,15.8,.55,2.4,.45,M.black);}
+ box(0,-25,13.8,2.2,5.3,1.5,M.steel);glow(0,-27.3,15.5,.7,1.7,id==='bastion'?M.amber:M.cyan,1.5);
+ if(id==='striker'){
+   for(let s of[-1,1]){box(s*18,-4,12.2,8.5,1.3,.7,M.black,s*.18);box(s*20,9,11.6,7.5,1.2,.7,M.ivory,s*.1);glow(s*26,18,9.8,1.2,4,M.red,1.2);}
+   b.ring(0,-7,17,5.2,.65,.55,M.cyan,32,0,Math.PI*2,.8);
+ }else if(id==='ghost'){
+   for(let s of[-1,1]){for(let i=0;i<4;i++)box(s*(17+i*3.5),8+i*2.2,9.8,2.6,7.2,.55,i%2?M.black:M.steel,s*.35);glow(s*31,18,7.8,1.1,7,M.lilac,1.35,s*.45);}
+   b.ring(0,-8,17.2,4.8,.55,.5,M.lilac,32,0,Math.PI*2,.95);
+ }else{
+   for(let s of[-1,1]){for(let i=0;i<5;i++)box(s*17,-7+i*6,18.2,6.8,1.4,.7,i%2?M.black:M.steel);box(s*21,-16,16.5,4.5,10,2,M.dark);glow(s*21,-20,18.8,1.2,3,M.amber,1.25);}
+   b.ring(0,-5,20.2,6.6,.8,.7,M.amber,36,0,Math.PI*2,1.05);
+ }
+ return b;
+}
+
+function nr17TravelMeshes(E){
+ if(nr17State.travelBuilt)return;
+ const M=NR15Art.M;
+ let ring=new NR15.Model();ring.ring(0,0,0,1,.045,.025,M.cyan,64,0,Math.PI*2,2.4);E.mesh('nr17WarpRing',ring);
+ let ring2=new NR15.Model();ring2.ring(0,0,0,1,.035,.02,M.lilac,64,0,Math.PI*2,2.1);E.mesh('nr17WarpRingB',ring2);
+ let streak=new NR15.Model();streak.box(0,0,0,1.2,56,1.0,M.cyan,.25);streak.glow(0,0,1.1,.75,50,M.cyan,2.8);E.mesh('nr17WarpStreak',streak);
+ let streakB=new NR15.Model();streakB.box(0,0,0,1.0,42,.8,M.lilac,.2);streakB.glow(0,0,.9,.65,38,M.lilac,2.5);E.mesh('nr17WarpStreakB',streakB);
+ let flare=new NR15.Model();flare.box(0,0,0,4,48,1.2,M.black,.5);flare.glow(0,0,1.4,2.4,47,M.cyan,3.2);E.mesh('nr17EngineFlare',flare);
+ nr17State.travelBuilt=true;
+}
+
+function nr17ShowcaseMeshes(E){
+ if(nr17State.showcaseBuilt)return;
+ for(const id of['striker','ghost','bastion'])E.mesh('display_'+id,nr17DetailedShip(id));
+ let bay=new NR15.Model(),M=NR15Art.M;
+ for(let s of[-1,1]){for(let i=0;i<5;i++){const x=s*(92+i*19);bay.box(x,0,-14,5,196,12,M.dark,1);bay.glow(x,0,-7.6,1.2,174,i%2?M.cyan:M.amber,.55);}bay.box(s*122,-28,-8,54,8,9,M.steel,1);bay.box(s*122,34,-8,54,8,9,M.steel,1);}
+ for(let i=0;i<7;i++){const y=-86+i*28;bay.box(0,y,-19,212,2.3,3,M.black,.4);}
+ bay.ring(0,0,-8,139,2.2,1,M.cyan,80,0,Math.PI*2,.8);bay.ring(0,0,-9,151,1.2,.6,M.amber,80,0,Math.PI*2,.45);
+ E.mesh('nr17ShowcaseBay',bay);nr17State.showcaseBuilt=true;
+}
+
+const nr17InitBase=nr15Init;
+nr15Init=function(){nr17InitBase();if(nr15State.engine&&nr15State.mode==='webgl2'){nr17State.showcaseBuilt=false;nr17State.travelBuilt=false;nr17ShowcaseMeshes(nr15State.engine);nr17TravelMeshes(nr15State.engine);}};
+
+// Auto remains balanced in gameplay, but the static hangar preview is allowed the Ultra pixel budget on desktop.
+const nr17ResizeBase=NR15.Engine.prototype.resize;
+NR15.Engine.prototype.resize=function(w,h,mobile){
+ const mobileLike=!!mobile||((navigator.maxTouchPoints||0)>0&&Math.min(w,h)<=900);
+ const q=this.quality,showcase=!!this.nr17Showcase&&!mobileLike&&q!=='compatibility';
+ if(showcase)this.quality='ultra';
+ try{return nr17ResizeBase.call(this,w,h,mobileLike);}finally{this.quality=q;}
+};
+
+const nr17EngineRenderBase=NR15.Engine.prototype.render;
+NR15.Engine.prototype.render=function(opts){const f=this.nr17TravelMode||0;if(f>.26&&f<.74){opts={...opts,zone:6.4,accent:'#b58cff',location:{sky:[.095,.025,.17],planet:[.12,.04,.20],position:[12,12,.01]}};}return nr17EngineRenderBase.call(this,opts);};
+
+const nr17ZoneBase=nr15Zone;
+nr15Zone=function(){if(state==='transit'&&nr16Travel?.active){return NR16World.index(nr17TravelF()<.68?nr16Travel.from:nr16Travel.to);}return nr17ZoneBase();};
+
+function nr17EnsureTransitEnvironment(E,index,key){
+ const stateKey=key==='from'?'travelFrom':'travelTo';
+ if(nr17State[stateKey]===index&&E.models.has('nr17Env_'+key))return;
+ E.destroyMesh('nr17Env_'+key);E.mesh('nr17Env_'+key,NR16World.build(index));nr17State[stateKey]=index;
+}
+
+function nr17PrepareTravel(time){
+ const E=nr15State.engine,f=nr17TravelF(),from=NR16World.index(nr16Travel.from),to=NR16World.index(nr16Travel.to),cx=1200,cy=900;
+ E.begin();E.nr17Showcase=false;E.nr17TravelMode=f;nr17TravelMeshes(E);nr17ShowcaseMeshes(E);nr17EnsureTransitEnvironment(E,from,'from');nr17EnsureTransitEnvironment(E,to,'to');
+ const launch=nr17Ease(Math.min(1,f/.24)),arrival=nr17Ease(Math.max(0,(f-.70)/.30));
+ if(f<.29){E.add('nr17Env_from',0,0,-30-launch*90,0,1-launch*.08);NR16World.dynamics(E,from,time,save.motion);}
+ if(f>.69){E.add('nr17Env_to',0,0,-105+arrival*105,0,.88+arrival*.12);NR16World.dynamics(E,to,time,save.motion);}
+ const shipY=cy+88-launch*86-arrival*18,shipZ=54+Math.sin(f*Math.PI)*18,bank=save.motion?-.05:Math.sin(f*Math.PI*3.1)*.09;
+ E.add('display_'+selectedRig,cx,shipY,shipZ,-.06+bank,2.45,0,f>.2&&f<.8?1:0,1,2.45,2.45,-.19);
+ // Twin emissive exhaust plumes stretch during the jump.
+ const jetX=selectedRig==='ghost'?18:selectedRig==='bastion'?15:12;
+ for(const s of[-1,1])E.add('nr17EngineFlare',cx+s*jetX*2.45,shipY+70,shipZ-7,0,1.1+2.2*Math.sin(Math.PI*Math.min(1,f/.35)),0,1,.82,1.15,1.15);
+ if(!save.motion&&f>.15&&f<.86){
+   const warp=Math.sin(Math.PI*Math.min(1,(f-.15)/.71));
+   for(let i=0;i<(coarse?18:34);i++){
+     const seed=(i*2.3999632297)%6.28318,rad=150+(i%9)*38,flow=(f*1650+i*113)%980;
+     const x=cx+Math.cos(seed)*rad,y=cy+Math.sin(seed)*rad-flow+480;
+     E.add(i%3?'nr17WarpStreak':'nr17WarpStreakB',x,y,-20+(i%5)*8,seed*.05,1+warp*1.9,0,warp,.22+warp*.62,1.0,1.0);
+   }
+   for(let i=0;i<9;i++){
+     const phase=(f*2.1+i/9)%1,scale=90+phase*720,alpha=(1-phase)*warp*.58;
+     E.add(i%2?'nr17WarpRing':'nr17WarpRingB',cx,cy-10,-15,0,scale,0,warp,alpha,scale,2.5);
+   }
+ }
+ if(f>.76){for(let i=0;i<5;i++){const phase=Math.max(0,Math.min(1,(f-.76)*4-i*.06)),r=185+i*58;E.add(i%2?'nr17WarpRingB':'nr17WarpRing',cx,cy,-24,0,r*(.75+phase*.25),0,phase,.25*(1-phase),r*(.75+phase*.25),2);}}
+ const zoom=1.04+launch*.20-arrival*.08+(!save.motion?Math.sin(f*Math.PI)*.09:0);
+ return{cx,cy:cy+24-launch*18,zoom};
+}
+
+const nr17PrepareBase=nr15Prepare;
+nr15Prepare=function(time){
+ const E=nr15State.engine;if(E){E.nr17Showcase=false;E.nr17TravelMode=0;}
+ if(state==='transit'&&nr16Travel?.active)return nr17PrepareTravel(time);
+ const view=nr17PrepareBase(time);
+ if(E&&(!player||state==='home')){
+   E.nr17Showcase=true;nr17ShowcaseMeshes(E);
+   // Replace the combat mesh with the display-only high-detail model without touching gameplay.
+   E.batches.delete(selectedRig);
+   const b=nr15State.shipPreview;if(!b.w)nr15Measure();const sx=b.x+b.w*.5,sy=b.y+b.h*.55,showScale=Math.min(b.w/255,b.h/168),wx=1200+(sx-W/2),wy=900+(sy-H/2),yaw=save.motion?-.52:-.52+Math.sin(ambientTime*.22)*.10;
+   E.add('nr17ShowcaseBay',wx,wy+32,-3,0,showScale*.62,0,0,1,showScale*.48,showScale*.55);
+   E.add('display_'+selectedRig,wx,wy,40,yaw,showScale*2.12,0,0,1,showScale*2.12,showScale*2.12,-.17);
+ }
+ return view;
+};
+
+// Prevent a full-resolution static hangar from needlessly running at 60 fps.
+const nr17OverlayBase=nr15Overlay;
+nr15Overlay=function(time,view){if(state==='transit'){ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,W,H);return;}return nr17OverlayBase(time,view);};
+
+const nr17RenderBase=nr15Render;
+nr15Render=function(force=false){
+ nr17PollGamepad();
+ const now=performance.now();
+ if(!force&&state==='home'&&!coarse&&nr15State.mode==='webgl2'&&now-nr17State.lastMenuPaint<32)return;
+ if(state==='home')nr17State.lastMenuPaint=now;
+ const out=nr17RenderBase(force);
+ if(state==='home')nr17UpdateShowcaseResolution();
+ return out;
+};
+render=nr15Render;
+
+const nr17GraphicsBase=nr16GraphicsStatus;
+nr16GraphicsStatus=function(){nr17GraphicsBase();nr17UpdateShowcaseResolution();};
+function nr17UpdateShowcaseResolution(){
+ const el=$('nrShowcaseResolution'),e=nr15State.engine;if(!el)return;
+ if(nr15State.mode==='webgl2'&&e?.w){const native=(e.w>=3840&&e.h>=2160)||(e.w>=5000&&e.h>=1400);el.textContent=`${e.w}×${e.h}${native?' / NATIVE SHOWCASE':' / SHOWCASE'}`;}else el.textContent='2D COMPATIBILITY';
+}
+
+const nr17TravelStartBase=nr16TravelToNext;
+nr16TravelToNext=function(upgrade=''){nr17TravelStartBase(upgrade);if(!nr16Travel.active)return;nr16Travel.duration=save.motion?.28:(coarse?3.0:3.45);nr17State.travelCue=0;unlockAudio();tone(86,.55,'sawtooth',.035,220);document.body.classList.add('nr-transit-launch');if($('travelPause'))$('travelPause').textContent='PAUSE';nr15State.staticKey='';};
+
+const nr17TravelTickBase=nr16Tick;
+nr16Tick=function(dt){
+ nr17TravelTickBase(dt);if(!nr16Travel.active)return;const f=nr17TravelF();
+ document.documentElement.style.setProperty('--nr17-travel',String(f));
+ document.body.classList.toggle('nr-transit-warp',f>=.18&&f<.76);document.body.classList.toggle('nr-transit-arrival',f>=.76);
+ const phase=f<.12?'CLEARING DOCK':f<.24?'CHARGING RIFT DRIVE':f<.70?'RIFT TRANSIT':f<.88?'DESTINATION LOCK':'FINAL APPROACH';
+ if(!save.motion&&nr17State.travelCue<1&&f>=.24){nr17State.travelCue=1;tone(180,.48,'triangle',.035,920);}if(!save.motion&&nr17State.travelCue<2&&f>=.74){nr17State.travelCue=2;tone(720,.42,'sine',.032,210);}
+ $('travelPhase').textContent=phase;nr15State.staticKey='';
+};
+const nr17TravelAbortBase=nr16AbortTransit;
+nr16AbortTransit=function(){nr17TravelAbortBase();document.body.classList.remove('nr-transit-launch','nr-transit-warp','nr-transit-arrival');};
+function nr17DisposeTransitMeshes(){const E=nr15State.engine;if(!E)return;E.destroyMesh('nr17Env_from');E.destroyMesh('nr17Env_to');nr17State.travelFrom=nr17State.travelTo=-1;E.nr17TravelMode=0;}
+const nr17ArriveBase=nr16Arrive;
+nr16Arrive=function(){nr17ArriveBase();if(!nr16Travel.active){document.body.classList.remove('nr-transit-launch','nr-transit-warp','nr-transit-arrival');nr17DisposeTransitMeshes();}};
+
+
+// Standard gamepads are first-class input: left stick/D-pad steer, A dashes, X overdrives,
+// Menu/Start pauses, and upgrade cards can be chosen without touching the screen.
+function nr17Gamepad(){try{return [...(navigator.getGamepads?.()||[])].find(p=>p&&p.connected)||null;}catch(_){return null;}}
+function nr17PadPressed(p,i){return !!p?.buttons?.[i]?.pressed;}
+function nr17PadAxis(value){const v=Number(value)||0,a=Math.abs(v);return a<.18?0:Math.sign(v)*Math.min(1,(a-.18)/.82);}
+const nr17MovementBase=movement;
+movement=function(){const base=nr17MovementBase();if(Math.hypot(base.x,base.y)>.05)return base;const p=nr17Gamepad();if(!p)return base;let x=nr17PadAxis(p.axes?.[0]),y=nr17PadAxis(p.axes?.[1]);if(nr17PadPressed(p,14))x=-1;if(nr17PadPressed(p,15))x=1;if(nr17PadPressed(p,12))y=-1;if(nr17PadPressed(p,13))y=1;const len=Math.hypot(x,y);if(len>1){x/=len;y/=len;}return{x,y};};
+function nr17Focusable(){return [...document.querySelectorAll('button:not([hidden]):not(:disabled),select:not([hidden]),.upgrade-card:not([hidden])')].filter(el=>el.offsetParent!==null&&!el.closest('[hidden]'));}
+function nr17MoveFocus(step){const els=nr17Focusable();if(!els.length)return;let i=els.indexOf(document.activeElement);i=i<0?(step>0?-1:0):i;els[(i+step+els.length)%els.length].focus({preventScroll:true});}
+function nr17ActivateFocused(){let el=document.activeElement;if(!el||!nr17Focusable().includes(el)){if(state==='home')el=$('startBtn');else if(state==='upgrade')el=document.querySelector('.upgrade-card');}el?.click?.();}
+function nr17PollGamepad(){const p=nr17Gamepad();if(!p){if(nr17State.padSeen){nr17State.padSeen=false;document.body.classList.remove('nr-gamepad');}nr17State.padButtons=[];return;}if(!nr17State.padSeen){nr17State.padSeen=true;document.body.classList.add('nr-gamepad');if($('nrControllerStatus'))$('nrControllerStatus').textContent='CONTROLLER READY';}
+ const pressed=Array.from({length:Math.max(18,p.buttons?.length||0)},(_,i)=>nr17PadPressed(p,i));const edge=i=>pressed[i]&&!nr17State.padButtons[i];
+ if(edge(9)){if(nr16Travel?.active){nr16Travel.paused?nr16ContinueTransit():nr16PauseTransit();}else if(state==='playing')pauseGame();else if(['paused','manual'].includes(state))resumeGame();}
+ if(state==='playing'){if(edge(0))tryDash();if(edge(2))tryOverdrive();}
+ else if(state==='upgrade'){if(edge(0))applyChoice(0);else if(edge(2))applyChoice(1);else if(edge(3))applyChoice(2);}
+ else if(!nr16Travel?.active){if(edge(12))nr17MoveFocus(-1);if(edge(13))nr17MoveFocus(1);if(edge(0))nr17ActivateFocused();}
+ nr17State.padButtons=pressed;
+}
+window.addEventListener('gamepadconnected',()=>{nr17State.padSeen=false;nr17PollGamepad();});
+window.addEventListener('gamepaddisconnected',()=>nr17PollGamepad());
+
+function nr17EnhanceUI(){document.body.classList.add('nr17');
+ const label=document.querySelector('.nr-preview-label');if(label&&!$('nrShowcaseResolution')){const status=document.createElement('span');status.id='nrShowcaseResolution';status.setAttribute('aria-live','polite');label.appendChild(status);}
+ if($('nrBuild'))$('nrBuild').textContent=nr15State.mode==='webgl2'?'1.7.0 / 3D CINEMATIC BUILD':'1.7.0 / 2D COMPATIBILITY';
+ if($('travelSkip'))$('travelSkip').textContent='SKIP JUMP';if($('travelPause'))$('travelPause').textContent='PAUSE';if(!$('nrControllerStatus')){const el=document.createElement('span');el.id='nrControllerStatus';el.textContent='KEYBOARD / TOUCH';document.querySelector('.nr-preview-caption')?.appendChild(el);}nr17UpdateShowcaseResolution();}
+queueMicrotask(nr17EnhanceUI);
+
+window.NEON_RIFT_VERSION=NR17_VERSION;
+window.__NEON_RIFT_VISUAL__=Object.freeze({version:NR17_VERSION,get renderer(){return nr15State.mode;},get profile(){return nr15State.quality;},get showcase(){const e=nr15State.engine;return e?[e.w,e.h]:null;}});
+if(new URLSearchParams(location.search).has('test'))window.__NR17_QA={travelProgress:nr17TravelF,forceRender:()=>nr15Render(true),showcaseVertices:id=>nr15State.engine?.models.get('display_'+id)?.count||0,showcaseSize:()=>[nr15State.engine?.w||0,nr15State.engine?.h||0],pollGamepad:nr17PollGamepad,movement:()=>movement(),startTravel:up=>nr16TravelToNext(up||'QA UPGRADE'),setTravelProgress(f){if(!nr16Travel.active)return false;nr16Travel.elapsed=Math.max(0,Math.min(1,Number(f)||0))*nr16Travel.duration;nr16Tick(0);nr15State.staticKey='';nr15Render(true);return true;}};
 
 // Explicitly opt-in deterministic inspection hooks for browser QA. Absent in normal play.
 if (new URL(location.href).searchParams.has('test')) {

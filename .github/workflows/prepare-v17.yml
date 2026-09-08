@@ -1,0 +1,37 @@
+name: Validate Neon Rift 1.7 cinematic travel and native showcase
+on:
+  push:
+    branches: [v17-cinematic-travel-20260908]
+    paths:
+      - '.github/workflows/prepare-v17.yml'
+      - 'tools/visual-v17/**'
+      - '.ci-transfer/v17-js.*.b64'
+      - 'tests/v17_regression.py'
+      - 'tests/prepare_v17_legacy.py'
+      - 'docs/RELEASE-1.7.md'
+      - 'docs/APP-STORE-READINESS.md'
+      - 'README.md'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: neon-rift-v17-candidate
+  cancel-in-progress: true
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 24
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          ref: v17-cinematic-travel-20260908
+          fetch-depth: 0
+      - name: Build and run all release gates
+        run: bash tools/visual-v17/ci.sh
+      - name: Preserve candidate and UAT evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: neon-rift-1.7-candidate-and-uat
+          path: artifacts
+          retention-days: 7
