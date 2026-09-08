@@ -1,9 +1,10 @@
-NEON RIFT 1.3.1 - RELEASE VALIDATION
-====================================
+NEON RIFT 1.4 - RELEASE VALIDATION
+==================================
 
-Neon Rift 1.3.1 is assembled and validated in GitHub Actions using headless
-Chromium with real keyboard events, Chromium emulated touchscreen input, mocked
-Supabase network boundaries, and strict source/build guards.
+Neon Rift 1.4 is assembled and validated in GitHub Actions using headless
+Chromium with real keyboard events, emulated touchscreen input, mocked Supabase
+network boundaries, deterministic QA hooks, measured Canvas output, and strict
+source/build guards.
 
 FINAL AUTOMATED RESULT
 ======================
@@ -11,161 +12,190 @@ Startup smoke: PASS
 Legacy mobile/desktop regression suite: 147 / 147 assertions PASS
 Managed-play regression suite: 40 / 40 assertions PASS
 Neon Rift 1.3.1 audio/onboarding/Endless suite: 34 / 34 assertions PASS
+Neon Rift 1.4 visual-overhaul suite: 40 / 40 assertions PASS
 
-That is 221 explicit browser assertions plus the separate startup smoke gate.
-The production launch files also pass JavaScript syntax, save-compatibility,
-client-credential, and byte-identity validation before the release is committed.
+That is 261 explicit browser assertions plus the separate startup smoke gate.
+The generated 1.4 launch files are byte-identical and the successful release
+artifact has Git blob SHA:
 
-LEGACY MOBILE / DESKTOP REGRESSION - 147 ASSERTIONS
-===================================================
-The existing regression suite continues to cover the gameplay and control surface
-that predates 1.3.1, including:
+    0ed6a04c587915518f75729a33ff40e42f825a34
 
+Generated launch-file size: 235,282 bytes each.
+
+BUILD, SYNTAX, SAVE, AND CLIENT-SECURITY GATES
+==============================================
+The release pipeline rebuilds from known approved layers rather than editing an
+unknown generated file:
+
+1. tools/mobile/build.py creates the approved mobile/gameplay baseline.
+2. tools/engagement/apply.py creates the tested Neon Rift 1.3.1 gameplay,
+   managed-run, audio, callsign, and Endless foundation.
+3. tools/engagement/apply_v14.py requires the exact approved 1.3.1 artifact and
+   layers only the 1.4 visual runtime/styling on top.
+
+The pipeline verifies:
+- index.html and neon-rift.html are byte-identical.
+- All inline JavaScript parses successfully.
+- Application version is 1.4.0.
+- Managed sessions report game version 1.4.0.
+- Existing local save keys remain unchanged.
+- Music remains on by default for new players.
+- The browser contains only the public Supabase publishable key.
+- No Supabase secret/service-role credential is exposed in client code.
+- The visual layer does not introduce a season or season-pass model.
+
+STARTUP AND LEGACY GAMEPLAY - 147 ASSERTIONS
+=============================================
+The startup smoke opens the assembled production code in a real Chromium process
+and fails on uncaught initialization exceptions. The final 1.4 startup smoke
+passes.
+
+The inherited 147-assertion suite then confirms that the visual wrappers did not
+break the established control/gameplay surface, including:
 - Desktop keyboard movement and input cleanup.
-- Mobile analog thumbstick movement and drag-anywhere fallback.
-- True multitouch steering plus DASH / OVERDRIVE ability use.
+- Mobile analog thumbstick and drag fallback.
+- True multitouch steering with DASH / OVERDRIVE.
 - Touch pause/resume while steering.
 - Touch-control AUTO / ON / OFF behavior.
 - Left-handed control layout.
-- Portrait and landscape layouts across tested viewport sizes.
-- Safe cleanup on rotation, visibility loss, blur, pointer cancellation, and
-  pointer-capture loss.
-- Ship selection, gameplay transitions, upgrade selection, and pause screens.
-- Desktop mouse/keyboard behavior alongside the mobile additions.
-- Device-pixel-ratio/rendering constraints used by the mobile build.
+- Portrait and landscape layouts.
+- Rotation, visibility, blur, pointer-cancel, and pointer-capture cleanup.
+- Ship selection, gameplay transitions, upgrades, and pause screens.
+- Desktop behavior alongside the mobile controls.
+- Device-pixel-ratio/rendering constraints.
 
-Because callsign onboarding is intentionally new behavior, the disposable legacy
-regression copy is seeded with a QA callsign so the old Start-button tests still
-exercise the original gameplay/control path. Production onboarding is not
-bypassed. The final legacy suite passes 147 / 147 assertions.
+The production callsign gate remains mandatory. Only the disposable legacy test
+copy receives a seeded QA callsign so pre-onboarding Start-button tests continue
+to exercise their original gameplay path.
 
-MANAGED-PLAY REGRESSION - 40 ASSERTIONS
-=======================================
-The managed-play suite validates the generated 1.3.1 production HTML while
-mocking the Supabase network boundary so client behavior is deterministic.
-Coverage includes:
-
-- Application version 1.3.1 and modern Supabase publishable-key configuration.
-- No legacy anonymous JWT configured in the active client block.
-- No service-role or Supabase secret key in browser code.
-- Managed `game-session` Edge Function configuration.
-- Explicit absence of a seasonal progression model.
-- Daily Signal and checkpoint behavior.
-- Pilot career HUD isolation and Escape-key navigation.
-- Anonymous browser player signal display and cosmetic themes.
-- Managed Daily and Standard session creation.
-- UTC Daily challenge state and deterministic modifiers.
-- Sector-boundary checkpoint creation, reload survival, and deterministic resume.
+MANAGED PLAY - 40 ASSERTIONS
+============================
+The managed-play suite continues to validate:
+- Public publishable-key configuration and absence of client secrets.
+- Managed `game-session` Edge Function integration.
+- No seasonal progression model.
+- Standard and Daily managed-session creation.
+- Daily UTC challenge state and deterministic modifiers.
+- Sector-boundary checkpoints and deterministic resume.
 - Sector-clear and resume telemetry.
 - Boss identity and managed finish submission.
-- Standard all-time and UTC Daily leaderboard filtering.
-- Daily victory suppressing Endless continuation.
-- Keyboard R matching Retry managed-session behavior.
+- Standard all-time and Daily leaderboard filtering.
+- Daily suppression of Endless continuation.
+- Keyboard retry matching managed Retry behavior.
 - Pause -> quit abandonment telemetry.
-- No uncaught JavaScript errors in the exercised managed-play path.
+- No uncaught JavaScript errors on the exercised managed-play path.
 
-NEON RIFT 1.3.1 REGRESSION - 34 ASSERTIONS
-==========================================
-The dedicated patch suite validates the issues addressed by 1.3.1:
+1.3.1 INHERITED PATCH COVERAGE - 34 ASSERTIONS
+==============================================
+All behavior introduced in 1.3.1 remains green under the 1.4 renderer:
+- Higher mobile audio output and DynamicsCompressor path.
+- Low mobile music-note octave shifting.
+- First-run callsign prompt and blank-name rejection.
+- Callsign normalization/persistence and prior PILOT history adoption.
+- STANDARD RUN, ENDLESS RUN, and DAILY SIGNAL home modes.
+- Ranked Endless starting at Sector 1 and progressing beyond Sector 9.
+- Separate permanent Endless leaderboard behavior.
+- Standard post-win CONTINUE INTO ENDLESS as an unranked same-build path.
+- No duplicate ranked submission from that continuation.
+- No season/season-pass behavior.
+- No uncaught JavaScript errors in those flows.
 
-- Application version 1.3.1.
-- Mobile master mix raised from the old low-level path.
-- Dynamics-compressor stage present in the WebAudio output graph.
-- Very low mobile music notes shifted upward for small-speaker audibility.
-- First-run callsign prompt present.
-- Blank callsigns rejected before managed run creation.
-- Callsign normalization and persistence.
-- Existing local `PILOT` history adopting the first real callsign.
-- Callsign confirmation preventing repeat prompts on later runs.
-- STANDARD RUN visible on the home screen.
-- ENDLESS RUN visible on the home screen.
-- DAILY SIGNAL remaining visible on the home screen.
-- Ranked Endless creating a managed `endless` session from sector 1.
-- Endless mode reflected in the QA snapshot and HUD.
-- Ranked Endless continuing beyond sector 9 instead of entering the Standard win
-  state.
-- Endless completion submitting as a survival/loss result rather than a victory.
-- 1.3.1 version tagging on managed submissions.
-- Separate Endless leaderboard query and rendering.
-- Standard victory prominently exposing CONTINUE INTO ENDLESS.
-- Post-win same-build continuation clearly labeled UNRANKED.
-- Post-win Endless receiving initial result-screen focus.
-- Post-win continuation switching the HUD to Endless.
-- Post-win continuation not creating a duplicate ranked submission.
-- Explicit absence of season/season-pass behavior.
-- No uncaught JavaScript errors during these flows.
+NEON RIFT 1.4 VISUAL REGRESSION - 40 ASSERTIONS
+===============================================
+The dedicated 1.4 suite validates the new presentation layer itself rather than
+only checking that source tokens exist.
 
-AUDIO VALIDATION BOUNDARY
-=========================
-The automated suite verifies the WebAudio graph and the intended gain/compression
-configuration, but a headless browser cannot measure sound pressure level from a
-physical phone speaker. The old root cause was deterministic in code: a 0.32
-master gain was followed by very small synthesized music levels, including notes
-around 49-65 Hz that phone speakers reproduce poorly.
+Static/release checks cover:
+- Version 1.4.0 and the premium Canvas 2D renderer marker.
+- Four visual territories: SIGNAL FRONTIER, ION WRECKAGE, FRACTURED VEIL, and
+  SOVEREIGN CORE.
+- Layered parallax/nebula background renderer.
+- Procedural arena/debris renderer.
+- Player motion/detail overlays.
+- Enemy and boss presentation layers.
+- Projectile and particle enhancement layers.
+- Camera/post-processing feedback.
+- Cinematic boss-introduction layer.
+- Reduced touch-device visual budgets.
+- Continued absence of a season model.
+- 1.4 managed-session version reporting.
 
-1.3.1 raises the coarse-pointer/mobile master target to 0.78, applies modest
-per-tone mobile boosts, shifts musical notes below 75 Hz up one octave on mobile,
-and uses a DynamicsCompressor to control summed peaks. Final perceived loudness
-must still be checked on actual phone hardware at a normal system-volume setting.
+Desktop browser checks cover:
+- 1.4 visual runtime initialization and desktop tier selection.
+- Premium body/hangar styling.
+- Measured home-screen Canvas complexity.
+- Standard managed run creation as version 1.4.0.
+- Correct visual palette selection at early, middle, late, and final sectors.
+- A non-flat gameplay Canvas frame measured from downsampled pixels.
+- A materially different pixel signature after changing from Signal Frontier to
+  Ion Wreckage, proving the biome change affects actual rendered output.
+- Automatic final-sector cinematic introduction naming RIFT SOVEREIGN.
+- Final boss spawning correctly underneath the visual wrappers.
+- Boss HUD cinematic state and ENRAGED presentation tied to real boss health.
+- Overdrive post-FX state and Dash camera pulse.
+- Existing gameplay invariants after the visual wrappers execute.
+- No uncaught JavaScript errors.
 
-BUILD AND SAVE-COMPATIBILITY GATES
-==================================
-The release workflow rebuilds from an approved baseline rather than editing an
-unknown generated file. It then verifies:
+Mobile browser checks cover:
+- Touch-device visual tier selection.
+- Reduced expensive background/debris budgets.
+- No horizontal home-screen overflow at the tested 390x844 viewport.
+- Valid gameplay invariants under the mobile visual tier.
+- Visible gameplay HUD after the premium styling layer.
+- No uncaught JavaScript errors.
 
-- index.html and neon-rift.html are byte-identical.
-- All inline JavaScript parses successfully.
-- The original `neon-rift-save-v1` key remains present.
-- The career `neon-rift-career-v1` key remains present.
-- Anonymous player identity uses `neon-rift-player-v1`.
-- Checkpoint resume uses `neon-rift-checkpoint-v1`.
-- Callsign onboarding uses `neon-rift-pilot-confirmed-v1`.
-- Music remains enabled by default for new players.
-- Existing localStorage save paths remain intact.
-- The browser uses only the public `sb_publishable_...` key.
-- No `sb_secret_...` or service-role credential is shipped to the browser.
+VISUAL IMPLEMENTATION BOUNDARY
+==============================
+The 1.4 overhaul is a Canvas 2D presentation layer, not a replacement game
+engine. It adds:
+- Multi-depth stars and nebula depth.
+- Deterministic sector debris/fractures/architecture without consuming gameplay
+  RNG.
+- Detailed ship/enemy overlays, engine/motion trails, and energy cores.
+- Stage-specific boss geometry and orbiting elements.
+- Projectile trails, hostile-shot halos, particle streaks, kill bursts, and
+  shockwaves.
+- Camera lead/kick/zoom response, Overdrive feedback, sector pulses, low-hull
+  edge lighting, and limited desktop chromatic edge response.
+- Cinematic boss stings.
+- Upgraded hangar, mode cards, upgrades, HUD, abilities, boss HUD, panels, and
+  callsign prompt styling.
 
-BACKEND SECURITY AND MODE VALIDATION
-====================================
-The Supabase production project was validated after adding first-class Endless
-mode:
+Performance-sensitive effects are deliberately reduced on coarse-pointer/touch
+devices. Reduced-motion preferences also suppress or reduce animated presentation
+where appropriate. Combat logic, score rules, run RNG, difficulty, and balance
+are not intentionally modified by the visual layer.
 
-- RLS remains enabled on backend-only player/session/telemetry/rate-limit tables.
-- Anonymous/authenticated roles have no access to those backend-only tables.
-- Anonymous access to `runs` remains SELECT only.
-- Direct anonymous leaderboard INSERT/UPDATE/DELETE remains revoked.
-- Run writes go through the `game-session` Edge Function.
-- The deployed Edge Function is version 3.
-- The function accepts exactly Standard, Endless, and Daily run modes.
-- Standard and Daily submissions are limited to the nine-sector objective.
-- Endless submissions may progress beyond sector 9 and cannot claim a victory
-  state.
-- A separate Endless score index and leaderboard filter are present.
-- When a browser supplies its first real callsign, prior community rows for the
-  same anonymous player identity still named PILOT can be relabeled server-side.
-- The function validates the public application key, session token hash, active
-  session, run-shape constraints, elapsed time sanity, duplicate run IDs, broad
-  score bounds, and request rate limits.
-- Only a coarse platform label is stored rather than a raw browser user-agent.
-- Supabase Security Advisor reports zero security findings after the Endless
-  migration.
+QA-ONLY DIAGNOSTICS
+===================
+The normal production URL keeps renderer/game-state internals closed over as
+before. The 1.4 assembler exposes a minimal rendering diagnostics bridge only
+when the explicit `?test` QA surface is present. This lets Playwright force visual
+sectors, render frames, inspect visual budgets, and measure Canvas output without
+making those internals part of ordinary gameplay.
 
-PRODUCTION DATA OBSERVATION BEFORE 1.3.1 DEPLOYMENT
-===================================================
-The backend contained one verified Standard victory from the live 1.3 build:
-404,238 score, 449 kills, 9 sectors, 265 seconds, Striker, 110 best combo. The
-run is associated with the anonymous browser identity and is currently named
-PILOT until that browser supplies a real callsign. There were no Endless rows
-before the new mode was deployed to the client.
+BACKEND / LEADERBOARD SECURITY
+==============================
+Neon Rift 1.4 does not require a Supabase schema change. It retains the hardened
+1.3.1 backend:
+- Anonymous clients can read `runs` but cannot directly insert/update/delete.
+- Backend-only player/session/telemetry/rate-limit tables remain inaccessible.
+- Score writes go through the `game-session` Edge Function.
+- Standard, Endless, and Daily remain separate run modes.
+- Standard/Daily use the nine-sector objective; Endless can exceed sector 9 and
+  cannot submit a victory state.
+
+The 1.4 client sends game version 1.4.0 through the existing managed-session path.
+No secret or service-role credential is present in browser code.
 
 LIMITATIONS
 ===========
-This is strong automated release validation, not a claim of universal bug-free
-operation. Chromium emulates the phone input/runtime surface; it is not a
-substitute for listening to the game on a physical iPhone or Android speaker.
-Safari/WebKit and every browser-management/accessibility configuration are also
-not individually certified.
+The automated suite is strong regression coverage, not a claim that every visual
+choice looks identical on every physical display. Headless Chromium validates
+rendered output, mode-specific pixel changes, layouts, visual state, and gameplay
+invariants, but it does not substitute for subjective inspection on physical
+iPhone/Android hardware or Safari/WebKit.
 
-The leaderboard is hardened against casual direct-database score fabrication but
-the game remains client-authoritative. It is not a fully server-simulated or
-cryptographically provable competitive environment.
+The game remains client-authoritative for competition. The managed backend is
+hardened against casual direct-database score fabrication, but it is not a fully
+server-simulated or cryptographically provable esports environment.
