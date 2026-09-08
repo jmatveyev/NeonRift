@@ -1,4 +1,4 @@
-"""Neon Rift 1.3 browser regression coverage.
+"""Neon Rift managed-play browser regression coverage.
 
 Runs the generated production page over localhost, mocks the Supabase network edge,
 and verifies managed run sessions, daily mode, checkpoint resume, telemetry, boss
@@ -34,7 +34,7 @@ def wait_port(port, seconds=5):
 
 html = (ROOT / 'index.html').read_text()
 config = html.split('window.NEON_RIFT_ONLINE = {', 1)[1].split('};', 1)[0]
-check('Production version is 1.3.0', 'application-version" content="1.3.0"' in html)
+check('Production version is 1.3.1', 'application-version" content="1.3.1"' in html)
 check('Modern Supabase publishable key is used', 'sb_publishable_' in config and 'publishableKey:' in config)
 check('Legacy anonymous JWT is no longer configured', 'anonKey:' not in config)
 check('No Supabase server secret is shipped', 'sb_secret_' not in html and "'service_role'" not in html and '"service_role"' not in html)
@@ -99,10 +99,13 @@ try:
             if '/rest/v1/runs' in request.url:
                 leaderboard_urls.append(request.url)
                 daily = 'mode=eq.daily' in request.url
+                endless = 'mode=eq.endless' in request.url
                 row = {
-                    'pilot': 'DAILY ACE' if daily else 'RIFT ACE', 'score': 54321 if daily else 98765,
-                    'kills': 88, 'sectors': 9, 'seconds': 302, 'rig': 'striker', 'max_combo': 27,
-                    'won': True, 'played_at': '2026-09-08T01:00:00Z', 'mode': 'daily' if daily else 'standard',
+                    'pilot': 'ENDLESS ACE' if endless else 'DAILY ACE' if daily else 'RIFT ACE',
+                    'score': 123456 if endless else 54321 if daily else 98765,
+                    'kills': 88, 'sectors': 12 if endless else 9, 'seconds': 302, 'rig': 'striker', 'max_combo': 27,
+                    'won': False if endless else True, 'played_at': '2026-09-08T01:00:00Z',
+                    'mode': 'endless' if endless else 'daily' if daily else 'standard',
                     'challenge_date': time.strftime('%Y-%m-%d', time.gmtime()) if daily else None,
                 }
                 fulfill_json(route, [row]); return
@@ -118,6 +121,8 @@ try:
         check('Career screen hides in-run HUD', page.locator('#hud').is_hidden())
         check('Anonymous player signal is displayed', 'PLAYER SIGNAL' in page.locator('#careerIdentity').inner_text())
         check('Four cosmetic signal themes are defined', page.locator('#careerTheme option').count() == 4)
+        page.locator('#careerPilotInput').fill('QA PILOT')
+        page.locator('#careerPilotInput').press('Enter')
         page.keyboard.press('Escape')
         check('Escape closes pilot career', page.locator('#homeScreen').is_visible())
 
@@ -178,7 +183,7 @@ try:
         page.wait_for_function("__NEON_RIFT_TEST__.snapshot().state === 'playing'")
         page.evaluate('__NEON_RIFT_TEST__.forceWave(9); __NEON_RIFT_TEST__.finishSector()')
         page.wait_for_function("__NEON_RIFT_TEST__.snapshot().state === 'won'")
-        check('Daily victory does not offer endless mode', page.locator('#endlessBtn').is_hidden())
+        check('Daily victory does not offer endless continuation', page.locator('#endlessBtn').is_hidden())
         daily_starts_before_retry = len(starts)
         page.keyboard.press('KeyR')
         page.wait_for_function("__NEON_RIFT_TEST__.snapshot().state === 'playing'")
@@ -190,7 +195,7 @@ try:
         page.locator('#startBtn').click()
         page.wait_for_function("__NEON_RIFT_TEST__.snapshot().state === 'playing'")
         standard = page.evaluate('__NEON_RIFT_TEST__.snapshot()')
-        check('Normal Enter the Rift uses standard managed session', starts[-1]['mode'] == 'standard', starts[-1])
+        check('Standard Run uses standard managed session', starts[-1]['mode'] == 'standard', starts[-1])
         check('Standard run keeps permanent all-time mode', standard.get('mode') == 'standard', standard)
         check('Standard mode HUD is visible', page.locator('#runModeHud').inner_text().startswith('STANDARD /'))
         event_count_before_quit = len(events)
@@ -208,6 +213,6 @@ finally:
     try: server.wait(timeout=2)
     except subprocess.TimeoutExpired: server.kill()
 
-output = {'build': '1.3.0', 'tests': RESULTS, 'passed': sum(t['pass'] for t in RESULTS), 'total': len(RESULTS)}
+output = {'build': '1.3.1', 'tests': RESULTS, 'passed': sum(t['pass'] for t in RESULTS), 'total': len(RESULTS)}
 (ROOT / 'tests' / 'v13-results.json').write_text(json.dumps(output, indent=2))
-print(f'V1.3 PASSED: {output["passed"]} / {output["total"]} assertions')
+print(f'MANAGED PLAY PASSED: {output["passed"]} / {output["total"]} assertions')
