@@ -28,8 +28,10 @@ if blob(source) != SRC_HASH:
 text = source.decode()
 css = (ROOT / 'tools/engagement/engagement.css').read_text()
 v13_css = (ROOT / 'tools/engagement/v13.css').read_text()
+v131_css = (ROOT / 'tools/engagement/v131.css').read_text()
 js = (ROOT / 'tools/engagement/engagement.js').read_text()
 v13_js = (ROOT / 'tools/engagement/v13.js').read_text()
+v131_js = (ROOT / 'tools/engagement/v131.js').read_text()
 # The 1.3 module is injected before the legacy career initializer reaches its final statements.
 # Defer its first UI/theme read until this synchronous script has finished initializing career.
 v13_js = once(
@@ -38,9 +40,9 @@ v13_js = once(
     'queueMicrotask(() => { ensureV13UI(); applyCareerTheme(); syncCheckpointButton(); });'
 )
 
-text = once(text, '<meta name="application-version" content="1.1.0-mobile">', '<meta name="application-version" content="1.3.0">')
+text = once(text, '<meta name="application-version" content="1.1.0-mobile">', '<meta name="application-version" content="1.3.1">')
 text = once(text, '</head>', ONLINE_CONFIG + '\n</head>')
-text = once(text, '</style>', css + '\n' + v13_css + '\n</style>')
+text = once(text, '</style>', css + '\n' + v13_css + '\n' + v131_css + '\n</style>')
 text = once(text,
     '<div class="home-stats"><div class="home-stat"><strong id="bestHome">0</strong><span>PERSONAL BEST</span></div><div class="home-stat"><strong id="runsHome">0</strong><span>RUNS STARTED</span></div><div class="home-stat"><strong id="winsHome">0</strong><span>RIFTS CLEARED</span></div></div>',
     '<div class="home-stats"><div class="home-stat"><strong id="bestHome">0</strong><span>PERSONAL BEST</span></div><div class="home-stat"><strong id="runsHome">0</strong><span>RUNS STARTED</span></div><div class="home-stat"><strong id="winsHome">0</strong><span>RIFTS CLEARED</span></div></div><div class="career-strip"><button id="profileBtn">PILOT PROFILE</button><span class="career-chip"><span>PILOT</span><b id="pilotHome">PILOT</b></span><span class="career-chip"><b id="levelHome">LV 1</b></span><span class="career-chip"><b id="achievementHome">0/8 BADGES</b></span></div>')
@@ -145,10 +147,10 @@ function onlineHeaders(cfg) {
   return headers;
 }"""
 
-# Inject the career + 1.3 runtime before the opt-in QA hook, then modernize the embedded fallback adapter.
+# Inject the career + managed 1.3 + 1.3.1 patch runtimes before the opt-in QA hook.
 text = once(text,
     '// Explicitly opt-in deterministic inspection hooks for browser QA. Absent in normal play.',
-    js + '\n' + v13_js + '\n// Explicitly opt-in deterministic inspection hooks for browser QA. Absent in normal play.')
+    js + '\n' + v13_js + '\n' + v131_js + '\n// Explicitly opt-in deterministic inspection hooks for browser QA. Absent in normal play.')
 text = once(text, old_adapter, new_adapter)
 text = once(text,
     'save: { ...save }, storageAvailable,',
@@ -160,5 +162,5 @@ text = once(text,
 output = text.encode()
 for name in ['index.html', 'neon-rift.html']:
     (ROOT / name).write_bytes(output)
-print('Neon Rift 1.3 release blob:', blob(output))
-print('Neon Rift 1.3 release bytes:', len(output))
+print('Neon Rift 1.3.1 release blob:', blob(output))
+print('Neon Rift 1.3.1 release bytes:', len(output))
