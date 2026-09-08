@@ -17,8 +17,24 @@ assert all(p.exists() for p in parts), 'Missing staged 1.7 source chunk'
 data=base64.b64decode(''.join(p.read_text().strip() for p in parts),validate=True)
 blob=hashlib.sha1((f'blob {len(data)}\0').encode()+data).hexdigest()
 assert blob=='c7eebf84957463b0f4087fe147a1b5d630d16695',blob
-Path('tools/visual-v17/v17.js').write_bytes(data)
-print('Reviewed 1.7 source:',len(data),'bytes;',blob)
+s=data.decode()
+old="""NR15.Engine.prototype.resize=function(w,h,mobile){
+ const q=this.quality,showcase=!!this.nr17Showcase&&!mobile&&q!=='compatibility';
+ if(showcase)this.quality='ultra';
+ try{return nr17ResizeBase.call(this,w,h,mobile);}finally{this.quality=q;}
+};"""
+new="""NR15.Engine.prototype.resize=function(w,h,mobile){
+ const mobileLike=!!mobile||((navigator.maxTouchPoints||0)>0&&Math.min(w,h)<=900);
+ const q=this.quality,showcase=!!this.nr17Showcase&&!mobileLike&&q!=='compatibility';
+ if(showcase)this.quality='ultra';
+ try{return nr17ResizeBase.call(this,w,h,mobileLike);}finally{this.quality=q;}
+};"""
+assert s.count(old)==1,'Unexpected 1.7 resize source'
+s=s.replace(old,new,1)
+patched=s.encode();patched_blob=hashlib.sha1((f'blob {len(patched)}\0').encode()+patched).hexdigest()
+assert patched_blob=='e25f7ec1e47b837485fe5392e3431f1efad01292',patched_blob
+Path('tools/visual-v17/v17.js').write_bytes(patched)
+print('Reviewed 1.7 source:',len(data),'bytes;',blob,'-> mobile-budget patch',len(patched),'bytes;',patched_blob)
 PY
 python3 tools/visual-v17/build.py
 cp index.html /tmp/neon-rift-1.7-production.html
@@ -27,14 +43,14 @@ from pathlib import Path
 import hashlib
 a=Path('index.html').read_bytes();b=Path('neon-rift.html').read_bytes();assert a==b
 sha=hashlib.sha1((f'blob {len(a)}\0').encode()+a).hexdigest()
-assert len(a)==319335,(len(a),sha);assert sha=='280b143bb9d2f2c046b5b69687daf143cd04dca7',sha
+assert len(a)==319426,(len(a),sha);assert sha=='57f93378682b216045cbf771b28682548eb987e9',sha
 print('Exact candidate:',len(a),'bytes;',sha)
 PY
 node - <<'JS'
 const fs=require('fs'),s=fs.readFileSync('index.html','utf8');
 for(const m of s.matchAll(/<script>([\s\S]*?)<\/script>/g))new Function(m[1]);
 for(const k of ['neon-rift-save-v1','neon-rift-career-v1','neon-rift-player-v1','neon-rift-checkpoint-v1','neon-rift-pilot-confirmed-v1'])if(!s.includes(k))throw Error('Missing save key '+k);
-for(const x of ['application-version" content="1.7.0"','NR17_VERSION','nr17PrepareTravel','nr17DetailedShip','NATIVE SHOWCASE','navigator.getGamepads','BOREAL ICE BELT','8294400'])if(!s.includes(x))throw Error('Missing release feature '+x);
+for(const x of ['application-version" content="1.7.0"','NR17_VERSION','nr17PrepareTravel','nr17DetailedShip','NATIVE SHOWCASE','navigator.getGamepads','navigator.maxTouchPoints','BOREAL ICE BELT','8294400'])if(!s.includes(x))throw Error('Missing release feature '+x);
 if(s.includes('sb_secret_')||s.includes("'service_role'"))throw Error('Unexpected server secret');
 console.log('Syntax, save compatibility, 1.7 feature and client-secret checks passed.');
 JS
