@@ -121,7 +121,7 @@ playable when browser storage is unavailable.
 
 There are no external assets, analytics, telemetry, or network calls
 in the game code. Sound is synthesized locally and starts only after
-a user gesture. Music is off by default; toggle it in the top bar or
+a user gesture. Music is on by default for new players; toggle it in the top bar or
 the pause menu. Reduced-motion controls are also in the pause menu.
 
 SOURCE CODE
