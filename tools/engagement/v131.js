@@ -1,6 +1,8 @@
-// NEON RIFT 1.3.1 - callsign onboarding, visible Endless mode and separated Endless leaderboard.
+// NEON RIFT 1.3.1 - louder mobile mix, callsign onboarding and visible ranked Endless mode.
+const V131_VERSION = '1.3.1';
 const PILOT_CONFIRM_KEY = 'neon-rift-pilot-confirmed-v1';
 let pendingPilotMode = null;
+let v131Limiter = null;
 
 function validRunMode(mode) { return ['standard', 'endless', 'daily'].includes(mode) ? mode : 'standard'; }
 function pilotConfirmed() {
@@ -26,22 +28,108 @@ function submitPilotPrompt() {
   const raw = String($('pilotPromptInput').value || '').toUpperCase().replace(/[^A-Z0-9 _-]/g, '').replace(/\s+/g, ' ').trim().slice(0, 16);
   if (!raw) { $('pilotPromptError').textContent = 'ENTER A CALLSIGN TO CONTINUE.'; return; }
   career.pilot = raw;
+  career.history = career.history.map((run) => run.pilot === 'PILOT' ? { ...run, pilot: raw } : run);
+  if (lastRunSummary?.pilot === 'PILOT') lastRunSummary = { ...lastRunSummary, pilot: raw };
   persistCareer(); confirmPilot(); syncCareerHome();
   if ($('careerPilotInput')) $('careerPilotInput').value = raw;
   const mode = pendingPilotMode || 'standard'; pendingPilotMode = null; $('pilotPrompt').hidden = true;
-  void startManagedRunV131Base(mode);
+  void startManagedRunV131Core(mode);
 }
 
-const startManagedRunV131Base = startManagedRun;
+// The 1.3 entry point accepted only standard/daily. 1.3.1 makes Endless a first-class managed mode.
+async function startManagedRunV131Core(mode = 'standard') {
+  const normalized = validRunMode(mode);
+  if (startingManagedRun) return;
+  startingManagedRun = true; activeMode = normalized; lastMode = normalized;
+  clearCheckpoint();
+  const button = normalized === 'daily' ? $('dailyRunBtn') : normalized === 'endless' ? $('endlessRunBtn') : $('startBtn');
+  const oldText = button?.innerHTML; if (button) { button.disabled = true; button.textContent = 'LINKING SIGNAL...'; }
+  let seed = normalized === 'daily' ? dailySeedClient() : null;
+  managedSession = null;
+  try {
+    const session = await callGameSession('start', {
+      player_id: playerIdentity.playerId, pilot: career.pilot, rig: selectedRig, mode: normalized,
+      game_version: V131_VERSION, platform: platformLabel()
+    });
+    seed = Number(session.seed) >>> 0;
+    managedSession = { runId: session.run_id, token: session.token, seed, mode: session.mode, challengeDate: session.challenge_date || null, finalizing: false, finalized: false };
+  } catch (_) {
+    const label = normalized === 'daily' ? 'DAILY PRACTICE' : normalized === 'endless' ? 'ENDLESS LOCAL' : 'STANDARD LOCAL';
+    toast(`${label} MODE - COMMUNITY SYNC UNAVAILABLE`, 3.4);
+  }
+  startRun(seed, false);
+  if (G) {
+    G.endless = normalized === 'endless'; G.mode = normalized;
+    G.challengeDate = managedSession?.challengeDate || (normalized === 'daily' ? todayUTC() : null);
+  }
+  syncRunModeHud();
+  if (button) { button.disabled = false; if (oldText) button.innerHTML = oldText; }
+  startingManagedRun = false;
+}
 startManagedRun = async function startManagedRunV131(mode = 'standard') {
   const normalized = validRunMode(mode);
   if (!pilotConfirmed()) { promptPilot(normalized); return; }
-  return startManagedRunV131Base(normalized);
+  return startManagedRunV131Core(normalized);
+};
+
+// Mobile WebAudio mix: the old master was 0.32, then music was mixed at values as low as 0.036.
+// Raise usable level on phone speakers and compress peaks instead of simply clipping the summed signal.
+const unlockAudioV130 = unlockAudio;
+unlockAudio = function unlockAudioV131() {
+  unlockAudioV130();
+  if (!audioCtx || !master) return;
+  try {
+    if (!v131Limiter) {
+      master.disconnect();
+      v131Limiter = audioCtx.createDynamicsCompressor();
+      v131Limiter.threshold.value = -10;
+      v131Limiter.knee.value = 10;
+      v131Limiter.ratio.value = 8;
+      v131Limiter.attack.value = 0.003;
+      v131Limiter.release.value = 0.16;
+      master.connect(v131Limiter); v131Limiter.connect(audioCtx.destination);
+    }
+    master.gain.setTargetAtTime(coarse ? 0.78 : 0.42, audioCtx.currentTime, 0.015);
+  } catch (_) { master.gain.value = coarse ? 0.72 : 0.40; }
+};
+const toneV130 = tone;
+tone = function toneV131(freq, duration = 0.1, type = 'sine', volume = 0.1, endFreq = null, delay = 0, musical = false) {
+  let adjustedFreq = freq, adjustedVolume = volume;
+  if (coarse) {
+    if (musical && adjustedFreq < 75) adjustedFreq *= 2;
+    adjustedVolume *= musical ? 1.35 : 1.18;
+  }
+  return toneV130(adjustedFreq, duration, type, Math.min(0.34, adjustedVolume), endFreq, delay, musical);
+};
+
+// Mark 1.3.1 submissions correctly even though the underlying career recorder is shared with 1.3.
+submitOnlineRun = async function submitManagedRunV131(summary) {
+  if (!managedSession || managedSession.finalized || managedSession.finalizing) return;
+  managedSession.finalizing = true;
+  try {
+    await callGameSession('finish', {
+      run_id: managedSession.runId, token: managedSession.token, score: summary.score, kills: summary.kills, sectors: summary.sectors,
+      seconds: Math.round(summary.seconds), max_combo: summary.maxCombo, won: activeMode === 'endless' ? false : summary.won,
+      damage_taken: summary.damageTaken, dashes: summary.dashes, overdrives: summary.overdrives, game_version: V131_VERSION,
+      telemetry: { cause: summary.cause, upgrades: summary.upgrades.map((u) => `${u.name}:${u.rank}`), modifier: G?.modifier?.id || null, platform: platformLabel() }
+    }, 6000);
+    managedSession.finalized = true;
+  } catch (_) { managedSession.finalizing = false; }
+};
+
+const syncRunModeHudV130 = syncRunModeHud;
+syncRunModeHud = function syncRunModeHudV131() {
+  if (!$('runModeHud')) return;
+  if (!G || !['playing','paused','upgrade'].includes(state)) { $('runModeHud').textContent = ''; return; }
+  const modifier = G.modifier || sectorModifier(G.seed, Math.max(1, G.wave));
+  const label = activeMode === 'daily' ? 'DAILY' : activeMode === 'endless' ? 'ENDLESS' : 'STANDARD';
+  $('runModeHud').textContent = `${label} / ${modifier.name}`;
+  $('runModeHud').title = modifier.detail;
 };
 
 function ensureV131UI() {
   if ($('startBtn')) $('startBtn').innerHTML = 'STANDARD RUN <span class="arrow" aria-hidden="true">&#x2192;</span>';
-  if ($('dailyRunBtn')) $('dailyRunBtn').innerHTML = 'DAILY SIGNAL <small>SAME SEED FOR EVERY PILOT</small>';
+  if ($('dailyRunBtn')) $('dailyRunBtn').innerHTML = `DAILY SIGNAL <small>${todayUTC()} UTC / SAME SEED FOR EVERY PILOT</small>`;
   if (!$('endlessRunBtn') && $('dailyRunBtn')) {
     const endless = document.createElement('button'); endless.id = 'endlessRunBtn'; endless.type = 'button'; endless.className = 'secondary v131-endless';
     endless.innerHTML = 'ENDLESS RUN <small>SECTOR 1 / SURVIVE UNTIL DEFEAT</small>';
@@ -102,8 +190,10 @@ refreshOnlineLeaderboard = async function refreshOnlineLeaderboardV131() {
   }
 };
 
-// Standard victories can still continue with the same build. That continuation is deliberately unranked;
-// starting ENDLESS RUN from the hangar creates the verified endless leaderboard session.
-$('endlessBtn').addEventListener('click', () => { if (state === 'upgrade' && G?.endless) { activeMode = 'endless'; lastMode = 'endless'; syncRunModeHud(); } });
+// Standard victories can still continue with the same build. This continuation is intentionally unranked.
+// Starting ENDLESS RUN from the hangar creates the verified Endless leaderboard session.
+$('endlessBtn').addEventListener('click', () => {
+  if (state === 'upgrade' && G?.endless) { activeMode = 'endless'; lastMode = 'endless'; managedSession = null; syncRunModeHud(); }
+});
 
 queueMicrotask(() => { ensureV131UI(); if (career.pilot !== 'PILOT') confirmPilot(); });
