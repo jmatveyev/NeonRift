@@ -1,0 +1,88 @@
+/* 1.6: one scoped upgrade layout. No inherited absolute-positioned glyphs. */
+body.nr16{--nr-accent:#9de7dd}
+body.nr16 #upgradeScreen{height:var(--view-height,100dvh);padding:calc(86px + env(safe-area-inset-top,0px)) max(18px,env(safe-area-inset-right,0px)) calc(28px + env(safe-area-inset-bottom,0px)) max(18px,env(safe-area-inset-left,0px));align-items:flex-start;background:#06101ce8;backdrop-filter:blur(12px);overscroll-behavior:contain;overflow-y:auto;overflow-x:hidden;scroll-padding:90px 20px 30px;}
+body.nr16 #upgradeScreen .upgrade-panel{width:min(1080px,100%);max-width:100%;min-width:0;padding:28px;margin:auto;border-color:#6fa8af4f;box-shadow:0 20px 100px #0008;}
+body.nr16 #upgradeScreen .upgrade-header{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;flex-wrap:wrap;margin:0 0 18px;}
+body.nr16 #upgradeScreen .upgrade-header>div:first-child{flex:1 1 240px;min-width:0;}
+body.nr16 #upgradeScreen .upgrade-header h2{font-size:clamp(24px,3vw,34px);line-height:1.2;margin:9px 0;letter-spacing:-.7px;overflow-wrap:anywhere;}
+body.nr16 #upgradeScreen .upgrade-header p{font-size:13px;line-height:1.6;margin:0;max-width:55ch;}
+body.nr16 #patchText{font:600 11px/1.5 ui-monospace,monospace;white-space:normal;flex:0 1 auto;padding:9px 11px;}
+body.nr16 #upgradeRoute{margin:0 0 21px;border-left:3px solid var(--nr-zone);padding:10px 15px;background:#0b202c;border-radius:0 4px 4px 0;}
+body.nr16 #upgradeDestination{font:650 11px/1.55 ui-monospace,monospace;letter-spacing:1px;color:#cef1e4;overflow-wrap:anywhere;}
+body.nr16 #upgradeRouteDescription{font:12px/1.6 var(--font);color:#a0bac8;margin:4px 0 0;}
+body.nr16 #upgradeCards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px;align-items:stretch;min-width:0;}
+body.nr16 #upgradeScreen .upgrade-card{position:relative;display:grid;grid-template-columns:44px minmax(0,1fr) 24px;grid-template-rows:44px auto 1fr auto;grid-template-areas:'icon category key' 'name name name' 'description description description' 'rank rank rank';gap:13px 10px;align-items:start;align-content:start;min-width:0;min-height:264px;height:auto;padding:20px;margin:0;text-align:left;border:1px solid #71939f70;border-radius:9px;background:linear-gradient(145deg,#233d4b,#0b1d2c);touch-action:pan-y;overflow:visible;}
+body.nr16 #upgradeScreen .upgrade-card .upgrade-icon{position:static!important;inset:auto;grid-area:icon;display:grid;place-items:center;align-self:start;width:44px;height:44px;min-height:0;line-height:1;font:400 27px/1 var(--font);color:#bcebdd;background:#719eab15;border:1px solid #85b5bf32;border-radius:9px;margin:0;}
+body.nr16 #upgradeScreen .upgrade-card .key{position:static!important;inset:auto;grid-area:key;display:flex;justify-content:center;align-items:center;align-self:start;width:24px;height:24px;margin:0;padding:0;font:600 11px/1 var(--font);}
+body.nr16 #upgradeScreen .upgrade-card .category{grid-area:category;align-self:center;display:block;margin:0;padding:0;font:700 9px/1.55 var(--font);letter-spacing:1.2px;color:#a7dacd;min-width:0;overflow-wrap:anywhere;}
+body.nr16 #upgradeScreen .upgrade-card>strong{grid-area:name;margin:0;padding:0;min-width:0;max-width:100%;font:650 19px/1.3 var(--font);letter-spacing:-.3px;overflow-wrap:anywhere;}
+body.nr16 #upgradeScreen .upgrade-card>p{grid-area:description;margin:0;padding:0;max-width:100%;min-width:0;font:400 13px/1.6 var(--font);color:#b7ccd8;overflow-wrap:anywhere;}
+body.nr16 #upgradeScreen .upgrade-card .rank{grid-area:rank;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;margin:2px 0 0;padding:13px 0 0;width:100%;min-width:0;font:600 10px/1.45 var(--font);letter-spacing:.3px;color:#c8dfdf;border-top:1px solid #71939f3c;}
+body.nr16 #upgradeScreen .rank-pips{display:flex;gap:4px;flex-shrink:0;}.nr16 #upgradeScreen .rank-pip{width:11px;height:3px;}
+body.nr16 #upgradeScreen .upgrade-card:hover{transform:none;border-color:#b8f1e0;background:linear-gradient(145deg,#2b4c59,#102632);}
+body.nr16 #upgradeScreen .upgrade-card:focus-visible{outline:2px solid #c3f4de;outline-offset:3px;}
+body.nr16 #upgradeScreen .upgrade-bottom{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;margin:22px 0 0;font:12px/1.5 var(--font);}
+body.nr16 #rerollBtn{min-height:44px;padding:10px 16px;font-size:12px;}
+body.nr16.nr-upgrading #hud,body.nr16.nr-upgrading #banner,body.nr16.nr-upgrading #nrBossIntro,body.nr16.nr-upgrading #toast{display:none!important;}
+body.nr16 #nrBuild{font-size:8px;letter-spacing:.6px;}
+.nr16 .nr-graphics-setting{display:grid;grid-template-columns:auto minmax(0,190px);gap:12px;align-items:center;}
+.nr16 #graphicsSelect{width:100%;min-height:44px;min-width:0;padding:8px 10px;border:1px solid #668698;border-radius:5px;background:#132b3c;color:#d1efea;font:12px var(--font);}
+.nr16 #graphicsResolution{margin:0 0 7px;font:11px/1.6 ui-monospace,monospace;color:#b4decd;}
+.nr16 .nr-graphics-note{font-size:11px!important;line-height:1.6!important;margin:0 0 12px!important;}
+body.nr16 .sector-name{max-width:100%;overflow-wrap:anywhere;}
+#sectorTravel{position:fixed;inset:0;z-index:85;height:var(--view-height,100dvh);display:flex;align-items:center;justify-content:center;padding:24px;background:radial-gradient(ellipse at center,#143547 0,#060e1c 72%);overflow:auto;overscroll-behavior:contain;}
+.travel-card{position:relative;width:min(620px,100%);margin:auto;padding:clamp(22px,5vw,42px);background:#0c1b2bdf;border:1px solid #82b6bd50;border-radius:12px;box-shadow:0 25px 100px #0009;text-align:center;z-index:1;}
+.travel-kicker{font:600 12px/1.6 ui-monospace,monospace;letter-spacing:4px;color:var(--travel-accent);}
+.travel-departure{font:10px/1.6 ui-monospace,monospace;letter-spacing:1px;color:#819eaf;margin:14px 0;}.travel-departure span{display:block;color:#9ab4c5;}
+.travel-card h2{font:650 clamp(25px,4.7vw,40px)/1.1 var(--font);letter-spacing:-1px;color:#dfedf0;margin:24px 0 12px;overflow-wrap:anywhere;}
+#travelCoordinate{font:10px/1.5 ui-monospace,monospace;letter-spacing:2px;color:var(--travel-accent);}
+#travelSub{font:13px/1.65 var(--font);color:#a8bfcd;margin:18px auto;max-width:42ch;}
+#travelMap{display:flex;justify-content:center;gap:6px;margin:21px 0;}
+#travelMap>span{display:grid;place-items:center;flex:1;max-width:38px;height:31px;border-top:2px solid #3c5367;color:#617b91;font:10px/1 ui-monospace,monospace;}
+#travelMap>span.visited{border-color:#8eaec0;color:#8eaec0;}#travelMap>span.next{border-color:var(--travel-accent);color:#e9f6ed;background:#617f831f;}
+.travel-track{height:3px;background:#384c603b;margin:25px 0 12px;}.travel-track>div{height:100%;background:var(--travel-accent);width:0;}
+#travelPhase{font:10px/1.5 ui-monospace,monospace;color:#cbddd9;letter-spacing:2px;}
+#travelUpgrade{color:#81aaae;font:10px/1.5 ui-monospace,monospace;min-height:15px;margin:16px 0 20px;}
+.travel-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;}.travel-actions button{margin:0;flex:1 1 180px;min-height:44px;font-size:11px;}
+.travel-tunnel{position:fixed;inset:-30%;pointer-events:none;background:repeating-conic-gradient(from 5deg,transparent 0deg 9.3deg,#b5e4ed12 9.4deg 9.55deg,transparent 9.65deg 16deg);mask-image:radial-gradient(ellipse,transparent 13%,#000 90%);animation:nrTransit 2.4s ease-out infinite;}
+@keyframes nrTransit{from{transform:scale(.65);opacity:0;}30%{opacity:.7;}to{transform:scale(1.6);opacity:0;}}
+.nr-reduced .travel-tunnel,.nr-transit-paused .travel-tunnel{animation:none;opacity:.2;}.nr-reduced *{scroll-behavior:auto!important;}
+@media(max-width:700px){
+ body.nr16 #upgradeScreen .upgrade-panel{padding:18px 15px;}
+ body.nr16 #upgradeScreen .upgrade-header{gap:10px;margin-bottom:12px;}
+ body.nr16 #upgradeScreen .upgrade-header>div:first-child{flex-basis:100%;}
+ body.nr16 #upgradeScreen .upgrade-header p{font-size:12px;}
+ body.nr16 #patchText{font-size:10px;padding:7px 9px;}
+ body.nr16 #upgradeRoute{padding:9px 11px;margin-bottom:14px;}
+ body.nr16 #upgradeDestination{font-size:10px;letter-spacing:.6px;}
+ body.nr16 #upgradeCards{grid-template-columns:1fr;gap:12px;}
+ body.nr16 #upgradeScreen .upgrade-card{grid-template-areas:'icon category key' 'icon name name' 'description description description' 'rank rank rank';grid-template-columns:44px minmax(0,1fr) 24px;grid-template-rows:auto auto auto auto;gap:7px 11px;min-height:0;padding:16px;}
+ body.nr16 #upgradeScreen .upgrade-card>strong{font-size:17px;line-height:1.3;}
+ body.nr16 #upgradeScreen .upgrade-card>p{font-size:12px;line-height:1.6;margin-top:4px;}
+ body.nr16 #upgradeScreen .upgrade-card .rank{padding-top:10px;margin-top:4px;font-size:10px;}
+ body.nr16 #upgradeScreen .upgrade-card .category{font-size:9px;line-height:1.55;letter-spacing:.8px;}
+ body.nr16 #upgradeScreen .upgrade-bottom{font-size:11px;margin-top:16px;}
+ body.nr16 #nrBuild{font-size:7px;}
+ body.nr16 #sectorTravel{padding:16px;}.travel-card{padding:24px 20px;}
+ .nr16 .nr-graphics-setting{grid-template-columns:1fr minmax(0,175px);}
+}
+@media(max-height:500px) and (min-width:701px){
+ body.nr16 #upgradeScreen{padding-top:74px;}
+ body.nr16 #upgradeScreen .upgrade-panel{padding:18px;}
+ body.nr16 #upgradeScreen .upgrade-card{min-height:240px;padding:15px;gap:10px 8px;}
+ body.nr16 #upgradeScreen .upgrade-card>strong{font-size:16px;}
+ body.nr16 #upgradeScreen .upgrade-card>p{font-size:12px;}
+ .travel-card{padding:18px 25px;}.travel-card h2{margin:10px 0;}#travelMap,#travelSub{margin:10px 0;}.travel-departure{margin:7px 0;}.travel-track{margin-top:15px;}
+}
+@media(prefers-reduced-motion:reduce){.travel-tunnel{animation:none;opacity:.2;}body.nr16 .upgrade-card{transition:none!important;}}
+
+@media(max-width:700px){body.nr16 #upgradeScreen .upgrade-header p,body.nr16 #upgradeRouteDescription{display:none;}body.nr16 #upgradeScreen .upgrade-header{margin-bottom:10px;gap:8px;}body.nr16 #upgradeScreen .upgrade-header h2{margin:6px 0 3px;}body.nr16 #upgradeRoute{margin-bottom:12px;}body.nr16 #upgradeScreen .upgrade-card{padding:14px;gap:6px 10px;}}
+
+@media(min-width:2500px) and (min-height:1300px){
+ body.nr16 .panel{zoom:1.5;}body.nr16 .home-layout{max-width:1780px;gap:28px 100px;}body.nr16 .nr-intro h1{font-size:144px;}body.nr16 #nrShipPreview{height:360px;}body.nr16 .home-copy{font-size:18px;max-width:550px;}
+ body.nr16 .nr-modes #startBtn{height:68px;font-size:16px;}body.nr16 .nr-modes .v131-mode-grid .secondary{font-size:14px;min-height:76px;}body.nr16 .nr-hangar .rig{min-height:180px;}
+ body.nr16 .topbar .brand{font-size:18px;}body.nr16 .topbar .tool{height:46px;font-size:13px;}body.nr16 #nrBuild{font-size:10px;top:28px;}
+ body.nr16 .status{width:320px;padding:16px;}body.nr16 .status-top{font-size:13px;}body.nr16 .status-bottom{font-size:10px;}body.nr16 .score-block{padding:14px 20px;}body.nr16 .score-value{font-size:37px;}body.nr16 .score-label{font-size:12px;}
+ body.nr16 .sector{min-width:350px;padding:13px 20px;}body.nr16 .sector .tag{font-size:12px;}body.nr16 .sector-name{font-size:11px;}body.nr16 #runModeHud{font-size:10px;}body.nr16 #bossHud{top:132px;max-width:530px;width:530px;}body.nr16 #bossName{font-size:12px;}
+ body.nr16 .ability{min-width:170px;padding:16px 20px;}body.nr16 .ability strong{font-size:13px;}body.nr16 .ability small{font-size:11px;}
+}
