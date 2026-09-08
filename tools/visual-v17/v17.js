@@ -59,9 +59,10 @@ nr15Init=function(){nr17InitBase();if(nr15State.engine&&nr15State.mode==='webgl2
 // Auto remains balanced in gameplay, but the static hangar preview is allowed the Ultra pixel budget on desktop.
 const nr17ResizeBase=NR15.Engine.prototype.resize;
 NR15.Engine.prototype.resize=function(w,h,mobile){
- const q=this.quality,showcase=!!this.nr17Showcase&&!mobile&&q!=='compatibility';
+ const mobileLike=!!mobile||((navigator.maxTouchPoints||0)>0&&Math.min(w,h)<=900);
+ const q=this.quality,showcase=!!this.nr17Showcase&&!mobileLike&&q!=='compatibility';
  if(showcase)this.quality='ultra';
- try{return nr17ResizeBase.call(this,w,h,mobile);}finally{this.quality=q;}
+ try{return nr17ResizeBase.call(this,w,h,mobileLike);}finally{this.quality=q;}
 };
 
 const nr17EngineRenderBase=NR15.Engine.prototype.render;
