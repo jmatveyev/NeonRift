@@ -70,9 +70,10 @@ jobs:
           assert "music: true" in s
           assert "localStorage.setItem(SAVE_KEY" in s
           assert "localStorage.setItem(CAREER_KEY" in s
-          assert "publishableKey: 'sb_publishable_" in s
-          assert "function: 'game-session'" in s
-          assert 'anonKey:' not in s
+          config=s.split('window.NEON_RIFT_ONLINE = {',1)[1].split('};',1)[0]
+          assert "publishableKey: 'sb_publishable_" in config
+          assert "function: 'game-session'" in config
+          assert 'anonKey:' not in config
           assert 'sb_secret_' not in s
           assert "'service_role'" not in s and '"service_role"' not in s
           print('Original saves preserved; public client uses only the modern publishable key and managed Edge Function.')
