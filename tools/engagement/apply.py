@@ -30,6 +30,13 @@ css = (ROOT / 'tools/engagement/engagement.css').read_text()
 v13_css = (ROOT / 'tools/engagement/v13.css').read_text()
 js = (ROOT / 'tools/engagement/engagement.js').read_text()
 v13_js = (ROOT / 'tools/engagement/v13.js').read_text()
+# The 1.3 module is injected before the legacy career initializer reaches its final statements.
+# Defer its first UI/theme read until this synchronous script has finished initializing career.
+v13_js = once(
+    v13_js,
+    'ensureV13UI(); applyCareerTheme(); syncCheckpointButton();',
+    'queueMicrotask(() => { ensureV13UI(); applyCareerTheme(); syncCheckpointButton(); });'
+)
 
 text = once(text, '<meta name="application-version" content="1.1.0-mobile">', '<meta name="application-version" content="1.3.0">')
 text = once(text, '</head>', ONLINE_CONFIG + '\n</head>')
@@ -76,6 +83,10 @@ text = once(text,
 text = once(text,
     "$('startBtn').addEventListener('click', startRun);\n$('retryBtn').addEventListener('click', startRun);",
     "$('startBtn').addEventListener('click', () => { if (typeof startManagedRun === 'function') void startManagedRun('standard'); else startRun(); });\n$('retryBtn').addEventListener('click', () => { if (typeof startManagedRun === 'function') void startManagedRun(typeof lastMode === 'string' ? lastMode : 'standard'); else startRun(); });")
+# Dispatch through the current returnHome binding so the 1.3 wrapper can clear checkpoints and emit abandonment telemetry.
+text = once(text,
+    "$('hangarBtn').addEventListener('click', returnHome);\n$('quitBtn').addEventListener('click', returnHome);",
+    "$('hangarBtn').addEventListener('click', () => returnHome());\n$('quitBtn').addEventListener('click', () => returnHome());")
 
 # Existing career instrumentation.
 text = once(text,
