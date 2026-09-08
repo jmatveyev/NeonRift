@@ -1,0 +1,136 @@
+name: Validate and assemble Neon Rift 1.5
+on:
+  push:
+    branches: [v15-solid-model-overhaul-20260908]
+    paths:
+      - '.github/workflows/prepare-v15.yml'
+      - '.ci-transfer/**'
+      - 'tools/visual-v15/**'
+      - 'tests/v15_regression.py'
+permissions:
+  contents: write
+concurrency:
+  group: neon-rift-v15-candidate
+  cancel-in-progress: true
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out candidate
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          ref: v15-solid-model-overhaul-20260908
+      - name: Verify and unpack reviewed source
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import base64, hashlib, json, lzma
+          parts=[Path('.ci-transfer/v15-source.01.b64'),Path('.ci-transfer/v15-source.02.b64')]
+          if all(p.exists() for p in parts):
+              encoded=''.join(p.read_text().strip() for p in parts)
+              assert hashlib.sha256(encoded.encode()).hexdigest()=='1fab60fd44398e9d8cb2020f0e2fe1846d21f683da54a9672b17b29fdabd4b4f', 'Source transfer checksum mismatch'
+              files=json.loads(lzma.decompress(base64.b64decode(encoded,validate=True)))
+              allowed={'tools/visual-v15/build.py','tools/visual-v15/renderer.js','tools/visual-v15/models.js','tools/visual-v15/presentation.js','tools/visual-v15/presentation.css','tests/v15_regression.py','docs/VISUAL-1.5.md'}
+              assert set(files)==allowed
+              for name,text in files.items():
+                  assert isinstance(text,str)
+                  target=Path(name)
+                  if target.exists() and target.read_text()!=text:
+                      raise RuntimeError('Refusing to overwrite separately changed source: '+name)
+                  target.parent.mkdir(parents=True,exist_ok=True)
+                  target.write_text(text)
+          else:
+              assert Path('tools/visual-v15/build.py').exists(), 'No reviewed source available'
+          print('Reviewed 1.5 source available as ordinary text files.')
+          PY
+      - name: Build exact candidate from audited 1.4
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib
+          def blob(data): return hashlib.sha1((f'blob {len(data)}\0').encode()+data).hexdigest()
+          a=Path('index.html').read_bytes();b=Path('neon-rift.html').read_bytes()
+          assert a==b
+          if blob(a)!='0ed6a04c587915518f75729a33ff40e42f825a34':
+              raise RuntimeError('Candidate no longer starts from the audited 1.4 artifact')
+          Path('/tmp/neon-rift-1.4.html').write_bytes(a)
+          PY
+          python3 tools/visual-v15/build.py
+          cp index.html /tmp/neon-rift-1.5-production.html
+          node - <<'JS'
+          const fs=require('fs');const a=fs.readFileSync('index.html','utf8');
+          if(a!==fs.readFileSync('neon-rift.html','utf8'))throw Error('Launch files differ');
+          for(const m of a.matchAll(/<script>([\s\S]*?)<\/script>/g))new Function(m[1]);
+          for(const key of ['neon-rift-save-v1','neon-rift-career-v1','neon-rift-player-v1','neon-rift-checkpoint-v1','neon-rift-pilot-confirmed-v1'])if(!a.includes(key))throw Error('Missing preserved save key '+key);
+          for(const token of ['application-version" content="1.5.0"','1.5.0 / 3D VISUAL EDITION','const NR15 =','drawElementsInstanced','startManagedRun','createDynamicsCompressor'])if(!a.includes(token))throw Error('Missing '+token);
+          if(a.includes('sb_secret_')||a.includes("'service_role'"))throw Error('Unexpected secret in browser client');
+          if(a.includes('drawPlayerV14'))throw Error('Old rendering wrappers were not removed');
+          console.log('Syntax, save keys, managed modes, audio, and new renderer verified.');
+          JS
+      - name: Install browser QA runtime
+        run: |
+          python3 -m pip install --disable-pip-version-check 'playwright>=1.55,<2' Pillow
+          python3 -m playwright install --with-deps chromium
+          python3 - <<'PY' >> "$GITHUB_ENV"
+          from playwright.sync_api import sync_playwright
+          with sync_playwright() as p:
+              print('CHROMIUM='+p.chromium.executable_path)
+          PY
+      - name: Run inherited input and startup regressions
+        run: |
+          trap 'cp /tmp/neon-rift-1.5-production.html index.html' EXIT
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('index.html');s=p.read_text()
+          a="window.NEON_RIFT_ONLINE = {\n  enabled: true,"
+          assert s.count(a)==1
+          s=s.replace(a,a.replace('true','false'),1)
+          a="version: 1, pilot: 'PILOT', xp: 0"
+          assert s.count(a)==1
+          s=s.replace(a,"version: 1, pilot: 'QA PILOT', xp: 0",1)
+          p.write_text(s)
+          PY
+          xvfb-run -a python3 tests/startup_smoke.py
+          xvfb-run -a python3 tests/mobile_controls.py
+      - name: Run inherited managed-play, audio and onboarding regressions
+        run: |
+          cp /tmp/neon-rift-1.5-production.html index.html
+          trap 'rm -f tests/.v15_compat_v13.py tests/.v15_compat_v131.py' EXIT
+          python3 - <<'PY'
+          from pathlib import Path
+          for name in ['v13','v131']:
+              s=Path(f'tests/{name}_regression.py').read_text()
+              s=s.replace('1.3.1','1.5.0')
+              Path(f'tests/.v15_compat_{name}.py').write_text(s)
+          PY
+          xvfb-run -a python3 tests/.v15_compat_v13.py
+          xvfb-run -a python3 tests/.v15_compat_v131.py
+      - name: Run new real-WebGL visual and mobile controls suite
+        run: |
+          xvfb-run -a python3 tests/v15_regression.py
+      - name: Stage exact release diagnostics
+        if: always()
+        run: |
+          mkdir -p artifacts/v15
+          test ! -f /tmp/neon-rift-1.5-production.html || cp /tmp/neon-rift-1.5-production.html artifacts/v15/index.html
+          cp -R tools/visual-v15 artifacts/v15/source 2>/dev/null || true
+          cp tests/v15_regression.py artifacts/v15/ 2>/dev/null || true
+      - name: Upload test evidence and runnable candidate
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: neon-rift-1.5-candidate
+          path: artifacts/v15/
+          retention-days: 7
+      - name: Commit tested source and paired launch files
+        run: |
+          cp /tmp/neon-rift-1.5-production.html index.html
+          cmp index.html neon-rift.html
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- tools/visual-v15 tests/v15_regression.py docs/VISUAL-1.5.md index.html neon-rift.html
+          git rm -- .ci-transfer/v15-source.01.b64 .ci-transfer/v15-source.02.b64
+          git diff --cached --check
+          git commit -m 'Assemble tested Neon Rift 1.5 solid-model visual edition'
+          git push origin HEAD:v15-solid-model-overhaul-20260908
