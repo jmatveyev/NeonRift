@@ -23,6 +23,14 @@ if blob(source) != SRC_HASH:
 text = source.decode()
 css = (ROOT / 'tools/engagement/v14.css').read_text()
 js = (ROOT / 'tools/engagement/v14.js').read_text()
+# The base game's per-frame simulation entry point is simulate(dt). Normalize the
+# visual source wrapper at assembly time so the 1.4 layer follows that real loop
+# without editing the frozen baseline simulation.
+js = once(
+    js,
+    "const updateV14Base = update;\nupdate = function updateV14(dt) { updateV14Base(dt); v14Tick(dt); };",
+    "const simulateV14Base = simulate;\nsimulate = function simulateV14(dt) { simulateV14Base(dt); v14Tick(dt); };"
+)
 
 text = once(text, '<meta name="application-version" content="1.3.1">', '<meta name="application-version" content="1.4.0">')
 # The 1.3.1 managed-session runtime is retained as the networking layer, but 1.4
