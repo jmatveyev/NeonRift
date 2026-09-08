@@ -83,6 +83,9 @@ text = once(text,
 text = once(text,
     "$('startBtn').addEventListener('click', startRun);\n$('retryBtn').addEventListener('click', startRun);",
     "$('startBtn').addEventListener('click', () => { if (typeof startManagedRun === 'function') void startManagedRun('standard'); else startRun(); });\n$('retryBtn').addEventListener('click', () => { if (typeof startManagedRun === 'function') void startManagedRun(typeof lastMode === 'string' ? lastMode : 'standard'); else startRun(); });")
+text = once(text,
+    "else if ((state === 'dead' || state === 'won') && code === 'KeyR') { event.preventDefault(); startRun(); }",
+    "else if ((state === 'dead' || state === 'won') && code === 'KeyR') { event.preventDefault(); if (typeof startManagedRun === 'function') void startManagedRun(typeof lastMode === 'string' ? lastMode : 'standard'); else startRun(); }")
 # Dispatch through the current returnHome binding so the 1.3 wrapper can clear checkpoints and emit abandonment telemetry.
 text = once(text,
     "$('hangarBtn').addEventListener('click', returnHome);\n$('quitBtn').addEventListener('click', returnHome);",
