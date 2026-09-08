@@ -31,6 +31,11 @@ js = once(
     "const updateV14Base = update;\nupdate = function updateV14(dt) { updateV14Base(dt); v14Tick(dt); };",
     "const simulateV14Base = simulate;\nsimulate = function simulateV14(dt) { simulateV14Base(dt); v14Tick(dt); };"
 )
+# Keep production internals closed over as before, but expose the minimal visual
+# diagnostics needed by Playwright when the explicit ?test QA surface is active.
+visual_public = "window.__NEON_RIFT_VISUAL__ = Object.freeze({ version: V14_VERSION, renderer: 'canvas2d-premium', mobileTier: coarse ? 'mobile' : 'desktop' });"
+visual_qa = visual_public + "\nif (new URLSearchParams(location.search).has('test')) {\n  window.render = render;\n  window.v14Palette = v14Palette;\n  window.v14Budget = v14Budget;\n  window.v14Visual = v14Visual;\n  window.refreshHUD = refreshHUD;\n  Object.defineProperty(window, 'G', { configurable: true, get: () => G, set: (value) => { G = value; } });\n}"
+js = once(js, visual_public, visual_qa)
 
 text = once(text, '<meta name="application-version" content="1.3.1">', '<meta name="application-version" content="1.4.0">')
 # The 1.3.1 managed-session runtime is retained as the networking layer, but 1.4
