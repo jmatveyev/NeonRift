@@ -112,7 +112,7 @@ try:
             route.abort()
 
         page.route(f'{SUPABASE}/**', supabase_route)
-        page.goto(f'{BASE}/?v131test', wait_until='load')
+        page.goto(f'{BASE}/?test', wait_until='load')
         page.wait_for_function('window.__NEON_RIFT_TEST__')
 
         check('Standard Run is visible on home screen', page.locator('#startBtn').is_visible() and 'STANDARD RUN' in page.locator('#startBtn').inner_text())
